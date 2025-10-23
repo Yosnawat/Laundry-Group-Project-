@@ -1,14 +1,17 @@
 /workspaces/Laundry-Group-Project-/backend/src/main/java/th/mfu/UserController.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/th/mfu/model/User.java
+/workspaces/Laundry-Group-Project-/backend/src/main/java/th/mfu/AppConstants.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/th/mfu/UserRepository.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/th/mfu/RatingService.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/th/mfu/MachineController.java
+/workspaces/Laundry-Group-Project-/backend/src/main/java/th/mfu/Machine.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/th/mfu/model/Role.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/th/mfu/UserService.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/th/mfu/PasswordConfig.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/th/mfu/config/CorsConfig.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/th/mfu/MachineRepository.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/th/mfu/AuthController.java
+/workspaces/Laundry-Group-Project-/backend/src/main/java/th/mfu/config/SecurityConfig.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/th/mfu/RatingRepository.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/th/mfu/RatingEntity.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/th/mfu/MachineService.java
