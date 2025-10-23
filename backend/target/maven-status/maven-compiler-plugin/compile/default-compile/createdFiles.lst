@@ -1,0 +1,17 @@
+th/mfu/RatingService.class
+th/mfu/config/CorsConfig.class
+th/mfu/model/Role.class
+th/mfu/AuthController$LoginRequest.class
+th/mfu/UserRepository.class
+th/mfu/MachineRepository.class
+th/mfu/model/User.class
+th/mfu/service/UserService.class
+th/mfu/MachineService.class
+th/mfu/AuthController$RegisterRequest.class
+th/mfu/RatingEntity.class
+th/mfu/AuthController.class
+th/mfu/RatingRepository.class
+th/mfu/Machine.class
+th/mfu/AppConstants.class
+th/mfu/App.class
+th/mfu/config/PasswordConfig.class

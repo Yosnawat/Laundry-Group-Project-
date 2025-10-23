@@ -23,12 +23,7 @@
     </properties>
 
     <dependencies>
-        <!-- Model Module -->
-        <dependency>
-            <groupId>com.laundry</groupId>
-            <artifactId>model</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
+        <!-- Model Module removed; model classes are provided inside this module to simplify the project in the workspace -->
 
         <!-- Spring Boot Starter Web -->
         <dependency>
@@ -47,6 +42,12 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
+        </dependency>
+
+        <!-- Spring Security (for PasswordEncoder) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
         <!-- Spring Boot DevTools for hot reload -->

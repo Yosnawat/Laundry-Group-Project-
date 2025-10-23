@@ -1,3 +1,12 @@
+package th.mfu;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
+import java.util.List;
+import th.mfu.model.User;
+
 @Service
 @Transactional
 public class MachineService {

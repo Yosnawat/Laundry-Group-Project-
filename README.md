@@ -39,6 +39,14 @@ BACKEND CODING:
 JPA/REST API/MVC
 
 
+    fixed package/import errors, inlined missing model classes (User, Role), and added a BCrypt PasswordEncoder (spring-boot-starter-security)
+
+    Requirements mapping: login supports studentId OR email + password; passwords are BCrypt-encoded on register and verified on login.
+    
+Notes:
+    I inlined model classes so the backend compiles standalone use for localtest if you prefer the original multi-module layout, restore the model module and update the POM.
+    I also 
+
 
 Customer 
 Create new account
