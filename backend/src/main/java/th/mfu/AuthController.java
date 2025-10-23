@@ -8,6 +8,7 @@ import th.mfu.model.Role;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -97,5 +98,21 @@ public class AuthController {
         } catch (Exception ex) {
             return ResponseEntity.status(500).body(Map.of("status","error","message","Server error"));
         }
+    }
+
+    // --- Temporary debug endpoint: list users (without passwords)
+    // Use this to verify registrations during development. Remove in production.
+    @GetMapping("/debug/users")
+    public ResponseEntity<?> listUsers() {
+        var list = userService.findAllUsers();
+        // map to safe view (exclude password)
+        var safe = list.stream().map(u -> Map.of(
+            "id", u.getId(),
+            "studentId", u.getStudentId(),
+            "name", u.getName(),
+            "email", u.getEmail(),
+            "role", u.getRole() != null ? u.getRole().name() : null
+        )).collect(Collectors.toList());
+        return ResponseEntity.ok(Map.of("status","ok","users", safe));
     }
 }

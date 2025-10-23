@@ -6,6 +6,7 @@ import th.mfu.UserRepository;
 import th.mfu.model.User;
 
 import java.util.Optional;
+import java.util.List;
 
 /**
  * Service that handles user registration and authentication.
@@ -75,5 +76,10 @@ public class UserService {
             if (stored.equals(rawPassword)) return Optional.of(user);
             return Optional.empty();
         }
+    }
+
+    /** Return all users (used by debug endpoint). Caller must not expose passwords. */
+    public List<User> findAllUsers() {
+        return userRepository.findAll();
     }
 }

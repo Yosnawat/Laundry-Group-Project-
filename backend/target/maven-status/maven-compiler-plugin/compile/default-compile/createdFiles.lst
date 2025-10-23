@@ -14,4 +14,5 @@ th/mfu/RatingRepository.class
 th/mfu/Machine.class
 th/mfu/AppConstants.class
 th/mfu/App.class
+th/mfu/config/SecurityConfig.class
 th/mfu/config/PasswordConfig.class
