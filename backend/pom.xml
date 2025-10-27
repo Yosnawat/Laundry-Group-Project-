@@ -50,6 +50,14 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 
+        <!-- Add R2DBC SPI on the classpath to satisfy optional autoconfig checks
+             (project doesn't use R2DBC but some autoconfigure classes are conditionally
+             inspected during component scanning; providing the SPI prevents NoClassDefFoundError) -->
+        <dependency>
+            <groupId>io.r2dbc</groupId>
+            <artifactId>r2dbc-spi</artifactId>
+        </dependency>
+
         <!-- Spring Boot DevTools for hot reload -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
