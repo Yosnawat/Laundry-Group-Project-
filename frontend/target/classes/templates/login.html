@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laundry Management System - Login</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <style>
         * {
             margin: 0;
@@ -12,60 +17,58 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Poppins', sans-serif;
+            background: #E7F5FF;
             min-height: 100vh;
             display: flex;
+            /* [CHANGED] Stack elements vertically */
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             padding: 20px;
         }
 
+        /* [NEW] Style for the new page header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            /* A complementary darker blue */
+            color: #004a99; 
+        }
+
         .container {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            border-radius: 16px; 
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); 
             overflow: hidden;
-            max-width: 900px;
+            max-width: 450px;
             width: 100%;
-            display: flex;
-            min-height: 550px;
-        }
-
-        .left-panel {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 50px 40px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-        }
-
-        .left-panel h1 {
-            font-size: 32px;
-            margin-bottom: 20px;
-        }
-
-        .left-panel p {
-            font-size: 16px;
-            opacity: 0.9;
-            line-height: 1.6;
-        }
-
-        .laundry-icon {
-            font-size: 80px;
-            margin-bottom: 20px;
         }
 
         .right-panel {
-            flex: 1;
             padding: 50px 40px;
             display: flex;
             flex-direction: column;
             justify-content: center;
+            text-align: center; 
+        }
+
+        .icon-container {
+            width: 70px;
+            height: 70px;
+            background: #E7F5FF; 
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 32px;
+            color: #007BFF;
         }
 
         .form-container {
@@ -74,13 +77,15 @@
 
         .form-title {
             font-size: 28px;
-            color: #333;
+            color: #343A40;
             margin-bottom: 10px;
+            font-weight: 600; 
         }
 
         .form-subtitle {
             color: #666;
             margin-bottom: 30px;
+            font-weight: 400; 
         }
 
         .tabs {
@@ -88,6 +93,7 @@
             gap: 10px;
             margin-bottom: 30px;
             border-bottom: 2px solid #e0e0e0;
+            justify-content: center; 
         }
 
         .tab {
@@ -99,10 +105,11 @@
             cursor: pointer;
             position: relative;
             transition: all 0.3s;
+            font-weight: 500;
         }
 
         .tab.active {
-            color: #667eea;
+            color: #007BFF;
             font-weight: 600;
         }
 
@@ -113,7 +120,7 @@
             left: 0;
             right: 0;
             height: 2px;
-            background: #667eea;
+            background: #007BFF;
         }
 
         .form-content {
@@ -126,11 +133,12 @@
 
         .form-group {
             margin-bottom: 20px;
+            text-align: left; 
         }
 
         .form-group label {
             display: block;
-            color: #333;
+            color: #343A40;
             margin-bottom: 8px;
             font-weight: 500;
         }
@@ -139,34 +147,38 @@
         .form-group select {
             width: 100%;
             padding: 12px 15px;
-            border: 2px solid #e0e0e0;
+            border: 1px solid #dde1e7;
+            background-color: #f8f9fa;
             border-radius: 8px;
             font-size: 14px;
             transition: all 0.3s;
+            font-family: 'Poppins', sans-serif;
         }
 
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: #007BFF;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
         }
 
         .submit-btn {
             width: 100%;
             padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #007BFF 0%, #0056b3 100%);
             color: white;
             border: none;
             border-radius: 8px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.3s;
         }
 
         .submit-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 5px 20px rgba(0, 123, 255, 0.4);
+            filter: brightness(1.1);
         }
 
         .submit-btn:active {
@@ -185,6 +197,7 @@
             margin-bottom: 20px;
             font-size: 14px;
             display: none;
+            text-align: left; 
         }
 
         .alert.show {
@@ -210,20 +223,8 @@
         }
 
         @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-
-            .left-panel {
-                padding: 30px 20px;
-            }
-
             .right-panel {
                 padding: 30px 20px;
-            }
-
-            .left-panel h1 {
-                font-size: 24px;
             }
 
             .form-title {
@@ -233,30 +234,31 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Left Panel -->
-        <div class="left-panel">
-            <div class="laundry-icon">🧺</div>
-            <h1>Laundry Management System</h1>
-            <p>Streamline your laundry operations with our easy-to-use platform. Login to manage orders, track progress, and enhance customer satisfaction.</p>
-        </div>
 
-        <!-- Right Panel -->
+    <header class="page-header">
+        <h1>Laundry Management Systems</h1>
+        <h1>By Group 7</h1>
+        
+    </header>
+    
+    <div class="container">
         <div class="right-panel">
             <div class="form-container">
+                
+                <div class="icon-container">
+                    🧺
+                </div>
+
                 <h2 class="form-title">Welcome Back</h2>
                 <p class="form-subtitle">Please login to your account</p>
 
-                <!-- Alert Messages -->
                 <div id="alertMessage" class="alert"></div>
 
-                <!-- Tabs -->
                 <div class="tabs">
                     <button class="tab active" onclick="switchTab('login')">Login</button>
                     <button class="tab" onclick="switchTab('register')">Register</button>
                 </div>
 
-                <!-- Login Form -->
                 <div id="loginForm" class="form-content active">
                     <form id="loginFormElement" onsubmit="handleLogin(event)">
                         <div class="form-group">
@@ -275,7 +277,6 @@
                     </form>
                 </div>
 
-                <!-- Register Form -->
                 <div id="registerForm" class="form-content">
                     <form id="registerFormElement" onsubmit="handleRegister(event)">
                         <div class="form-group">
@@ -459,7 +460,8 @@
                 } else {
                     showAlert(data.error || 'Registration failed. Please try again.', 'error');
                 }
-            } catch (error) {
+            } catch (error)
+ {
                 showAlert('An error occurred. Please try again later.', 'error');
                 console.error('Registration error:', error);
             } finally {
