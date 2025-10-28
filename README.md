@@ -1,60 +1,118 @@
-# Laundry Booking SystemTO DO THIS WEEK(LOGIN PAGE):
+# Laundry Booking System# Laundry Booking SystemTO DO THIS WEEK(LOGIN PAGE):
 
 
 
-Spring Boot backend with role-based user authentication, machine booking, and rating system.LOGIN PAGE WILL HAVE 2 WAYS TO LOGIN DIVIDED BY ROLE IN USER.java(manager and student) VALIDATE IF THE USER IS CORRECT WITH THE LOGIN FORM VALIDATE BY name and password in USER.java which info found in user.sql
+Spring Boot backend for laundry machine booking with authentication.
 
 
 
----1.IF VALIDATION SUCCESSFUL, direct to booking page 2. IF NOT SUCCESSFUL, give error
+## Build & RunSpring Boot backend with role-based user authentication, machine booking, and rating system.LOGIN PAGE WILL HAVE 2 WAYS TO LOGIN DIVIDED BY ROLE IN USER.java(manager and student) VALIDATE IF THE USER IS CORRECT WITH THE LOGIN FORM VALIDATE BY name and password in USER.java which info found in user.sql
 
 
-
-## Quick StartTHERE IS ALSO CREATE ACCOUNT PAGE with the button in login page, THINGS TO BE ASKED FOR CREATION found in user.java:
-
-private String studentId;
 
 ```bash
 
-cd backend@Column(nullable = false)
+cd backend
 
-mvn clean installprivate String name;
+mvn clean install---1.IF VALIDATION SUCCESSFUL, direct to booking page 2. IF NOT SUCCESSFUL, give error
 
 mvn spring-boot:run
 
-```@Column(nullable = false, unique = true)
-
-private String email;
-
-Server runs on `http://localhost:8080`
-
-@Column(nullable = false)
-
----private String password;
+```
 
 
 
-## Testing Login & Spring Boot@Enumerated(EnumType.STRING)
+Server: `http://localhost:8080`## Quick StartTHERE IS ALSO CREATE ACCOUNT PAGE with the button in login page, THINGS TO BE ASKED FOR CREATION found in user.java:
 
-private Role role;
 
-### Run Login TestsTHINGS TO WORK ON:
+
+## Testingprivate String studentId;
+
+
+
+### Test Login```bash
 
 ```bash
 
-mvn -f backend/pom.xml test -Dtest=AuthControllerTestCustomer  Create new account Login Front page(Time-slot) Book slot page(which Machine)  Timer page after confirm Completion Page End​ Service Page(rating system)  Machine details Page
+mvn -f backend/pom.xml test -Dtest=AuthControllerTestcd backend@Column(nullable = false)
 
 ```
 
-Admin The money is given Editing Page for Washing Machine Editing Page for Students booked Confirm Page
+mvn clean installprivate String name;
 
-### Test Results
+### Manual Test
 
-- 6 tests totalDatabase :  Booking Payment Confirmed Students Rating Registered Student
+```bashmvn spring-boot:run
 
-- Tests: login success (studentId & email), invalid credentials, missing fields
+# Register
 
-- Expected: All pass ✅FRONTEND CODING: AJAX/THYMELEAF/REACTJS
+curl -X POST http://localhost:8080/api/auth/register \```@Column(nullable = false, unique = true)
+
+  -H "Content-Type: application/json" \
+
+  -d '{"studentId":"S123","name":"Test","email":"test@example.com","password":"pass","role":"STUDENT"}'private String email;
+
+
+
+# LoginServer runs on `http://localhost:8080`
+
+curl -X POST http://localhost:8080/api/auth/login \
+
+  -H "Content-Type: application/json" \@Column(nullable = false)
+
+  -d '{"studentId":"S123","password":"pass"}'
+
+```---private String password;
+
+
+
+## API
+
+
+
+| Method | Endpoint | Description |## Testing Login & Spring Boot@Enumerated(EnumType.STRING)
+
+|--------|----------|-------------|
+
+| POST | `/api/auth/register` | Create account |private Role role;
+
+| POST | `/api/auth/login` | Login |
+
+| GET | `/api/auth/users` | List users |### Run Login TestsTHINGS TO WORK ON:
+
+
+
+## Stack```bash
+
+
+
+- Spring Boot 2.7.14mvn -f backend/pom.xml test -Dtest=AuthControllerTestCustomer  Create new account Login Front page(Time-slot) Book slot page(which Machine)  Timer page after confirm Completion Page End​ Service Page(rating system)  Machine details Page
+
+- Spring Security + BCrypt
+
+- JUnit 5 + Mockito```
+
+- H2 (test) / MySQL (prod)
+
+- MavenAdmin The money is given Editing Page for Washing Machine Editing Page for Students booked Confirm Page
+
+
+
+## TODO### Test Results
+
+
+
+- [ ] Login page (studentId or email)- 6 tests totalDatabase :  Booking Payment Confirmed Students Rating Registered Student
+
+- [ ] Account creation page
+
+- [ ] Booking interface- Tests: login success (studentId & email), invalid credentials, missing fields
+
+- [ ] Machine management
+
+- [ ] Rating system- Expected: All pass ✅FRONTEND CODING: AJAX/THYMELEAF/REACTJS
+
+- [ ] Admin panel
 
 ### Manual Test with cURL
 
