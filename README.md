@@ -27,34 +27,3 @@ Admin The money is given Editing Page for Washing Machine Editing Page for Stude
 Database :  Booking Payment Confirmed Students Rating Registered Student
 
 FRONTEND CODING: AJAX/THYMELEAF/REACTJS
-
-## Testing
-
-### Running Tests
-
-#### Backend Tests
-To run all backend tests:
-```bash
-mvn -f backend/pom.xml test
-```
-
-To run a specific test class:
-```bash
-mvn -f backend/pom.xml test -Dtest=AuthControllerTest
-```
-
-To run tests with a specific pattern:
-```bash
-mvn -f backend/pom.xml test -Dtest=*Controller*
-```
-
-#### Test Configuration
-- Test configuration file: `backend/src/test/resources/application-test.properties`
-- Test classes are located in: `backend/src/test/java/`
-
-#### Current Tests
-- **AuthControllerTest**: Tests for authentication controller endpoints and user login/registration functionality
-
-### Test Reports
-After running tests, reports are generated in:
-- `backend/target/surefire-reports/` - Test execution reports and XML results
