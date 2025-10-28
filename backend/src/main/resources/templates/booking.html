@@ -1,290 +1,197 @@
 <!DOCTYPE html>
-<html
-  xmlns:th="http://www.thymeleaf.org"
-  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-  layout:decorate="~{layout}"
->
-  <head>
-    <title>Bookings</title>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Laundry System - Booking</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .app-container { max-width: 1000px; width: 95%; margin: 20px auto; background: white; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); }
+        .view { display: none; padding: 2rem; }
+        .primary-btn { background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; transition: background-color 0.3s, transform 0.1s; }
+        .primary-btn:hover { background-color: #2563eb; }
+        .primary-btn:active { transform: scale(0.98); }
+        .tab-btn { display: inline-block; py: 1; px: 3; font-size: 0.875rem; border-bottom-width: 2px; border-color: transparent; }
+        .tab-btn:hover { border-color: #9ca3af; }
+        .tab-btn.active { border-color: #3b82f6; color: #3b82f6; font-weight: 700; }
+        .card { background-color: #f9fafb; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
+        .machine-available { border-left: 4px solid #10b981; } /* emerald-500 */
+        .machine-in-use { border-left: 4px solid #f97316; } /* orange-500 */
+    </style>
+</head>
+<body>
 
-    <th:block layout:fragment="extra-css">
-      <style>
-        .stats-card {
-          background: white;
-          border-radius: 0.5rem;
-          padding: 1.5rem;
-          box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-          border-left: 4px solid;
-        }
+<div class="app-container">
+    <nav id="navbar" class="p-4 border-b border-gray-100 flex justify-between items-center rounded-t-xl bg-gray-50">
+        <h1 class="text-2xl font-bold text-gray-800">Laundry Hub</h1>
+        <div class="flex space-x-4 items-center">
+            <div id="nav-tabs" class="space-x-2">
+                <a href="dashboard.html" class="tab-btn">Dashboard</a>
+                <a href="booking.html" id="nav-booking-link" class="tab-btn active">Booking</a>
+                </div>
+            <span id="user-info" class="text-sm text-gray-600 font-medium hidden sm:inline"></span>
+        </div>
+    </nav>
 
-        .stats-card.primary {
-          border-left-color: #4e73df;
-        }
+    <div id="message-box" class="fixed top-5 right-5 z-50"></div>
+    
+    <div id="booking-view" class="view">
+        <h2 class="text-3xl font-bold mb-6 text-gray-800">Machine Booking</h2>
 
-        .stats-card.success {
-          border-left-color: #1cc88a;
-        }
+        <div class="mb-6 flex space-x-4">
+            <label class="flex items-center space-x-2">
+                <input type="radio" name="machine_type" value="All" checked class="text-blue-600 focus:ring-blue-500">
+                <span>All Machines</span>
+            </label>
+            <label class="flex items-center space-x-2">
+                <input type="radio" name="machine_type" value="Washer" class="text-blue-600 focus:ring-blue-500">
+                <span>Washers</span>
+            </label>
+            <label class="flex items-center space-x-2">
+                <input type="radio" name="machine_type" value="Dryer" class="text-blue-600 focus:ring-blue-500">
+                <span>Dryers</span>
+            </label>
+        </div>
 
-        .stats-card.warning {
-          border-left-color: #f6c23e;
-        }
-
-        .stats-card.danger {
-          border-left-color: #e74a3b;
-        }
-
-        .booking-table {
-          background: white;
-          border-radius: 0.5rem;
-          box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-          overflow: hidden;
-        }
-
-        .table-header {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          padding: 1.5rem;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .badge {
-          padding: 0.35rem 0.65rem;
-          font-size: 0.75rem;
-          font-weight: 600;
-        }
-
-        .btn-action {
-          padding: 0.25rem 0.5rem;
-          font-size: 0.875rem;
-        }
-
-        .search-box {
-          position: relative;
-        }
-
-        .search-box input {
-          padding-left: 2.5rem;
-        }
-
-        .search-box i {
-          position: absolute;
-          left: 1rem;
-          top: 50%;
-          transform: translateY(-50%);
-          color: #858796;
-        }
-      </style>
-    </th:block>
-  </head>
-  <body>
-    <div layout:fragment="page-title">
-      <h4 class="mb-0">Booking Management</h4>
+        <div id="machine-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <p class="text-gray-500 col-span-full">Loading machine status...</p>
+        </div>
     </div>
 
-    <div layout:fragment="content">
-      <!-- Statistics Cards -->
-      <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-4">
-          <div class="stats-card primary">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <div
-                  class="text-secondary text-uppercase mb-1"
-                  style="font-size: 0.8rem; font-weight: 600"
-                >
-                  Total Bookings
-                </div>
-                <div
-                  class="h3 mb-0 font-weight-bold"
-                  th:text="${totalBookings} ?: 245"
-                >
-                  245
-                </div>
-              </div>
-              <div class="text-primary" style="font-size: 2rem">
-                <i class="fas fa-calendar-check"></i>
-              </div>
-            </div>
-          </div>
-        </div>
+    </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-          <div class="stats-card success">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <div
-                  class="text-secondary text-uppercase mb-1"
-                  style="font-size: 0.8rem; font-weight: 600"
-                >
-                  Confirmed
-                </div>
-                <div
-                  class="h3 mb-0 font-weight-bold"
-                  th:text="${confirmedBookings} ?: 187"
-                >
-                  187
-                </div>
-              </div>
-              <div class="text-success" style="font-size: 2rem">
-                <i class="fas fa-check-circle"></i>
-              </div>
-            </div>
-          </div>
-        </div>
+<script>
+    // --- GLOBAL DATA & STATE ---
+    const users = [
+        { id: 'S12345', email: 'student@uni.edu', password: '123', role: 'Student', name: 'Alice Student' },
+        { id: 'M99', email: 'manager@uni.edu', password: '123', role: 'Manager', name: 'Bob Manager' }
+    ];
 
-        <div class="col-xl-3 col-md-6 mb-4">
-          <div class="stats-card warning">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <div
-                  class="text-secondary text-uppercase mb-1"
-                  style="font-size: 0.8rem; font-weight: 600"
-                >
-                  Pending
-                </div>
-                <div
-                  class="h3 mb-0 font-weight-bold"
-                  th:text="${pendingBookings} ?: 42"
-                >
-                  42
-                </div>
-              </div>
-              <div class="text-warning" style="font-size: 2rem">
-                <i class="fas fa-clock"></i>
-              </div>
-            </div>
-          </div>
-        </div>
+    const machines = [
+        { id: 'W-01', name: 'Washer 1', type: 'Washer', status: 'Available', next_available: 'Ready now', location: 'Floor 1', capacity: 'Large' },
+        { id: 'D-01', name: 'Dryer 1', type: 'Dryer', status: 'In Use', next_available: '11:30 AM', location: 'Floor 1', capacity: 'Large' },
+        { id: 'W-02', name: 'Washer 2', type: 'Washer', status: 'Available', next_available: 'Ready now', location: 'Floor 2', capacity: 'Medium' },
+        { id: 'W-03', name: 'Washer 3', type: 'Washer', status: 'In Use', next_available: '12:00 PM', location: 'Floor 2', capacity: 'Medium' },
+        { id: 'D-02', name: 'Dryer 2', type: 'Dryer', status: 'Available', next_available: 'Ready now', location: 'Floor 1', capacity: 'Small' },
+    ];
 
-        <div class="col-xl-3 col-md-6 mb-4">
-          <div class="stats-card danger">
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <div
-                  class="text-secondary text-uppercase mb-1"
-                  style="font-size: 0.8rem; font-weight: 600"
-                >
-                  Cancelled
-                </div>
-                <div
-                  class="h3 mb-0 font-weight-bold"
-                  th:text="${cancelledBookings} ?: 16"
-                >
-                  16
-                </div>
-              </div>
-              <div class="text-danger" style="font-size: 2rem">
-                <i class="fas fa-times-circle"></i>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    let currentUser = users[0]; // Auto-login as Alice Student
 
-      <!-- Bookings Table -->
-      <div class="booking-table">
-        <div class="table-header">
-          <h5 class="mb-0"><i class="fas fa-list"></i> Recent Bookings</h5>
-          <button
-            class="btn btn-light btn-sm"
-            data-bs-toggle="modal"
-            data-bs-target="#newBookingModal"
-          >
-            <i class="fas fa-plus"></i> New Booking
-          </button>
-        </div>
+    // --- UTILITIES ---
+    function showMessage(message, type = 'info') {
+        const baseClass = "p-4 mb-2 rounded-lg shadow-lg text-white font-semibold transition-opacity duration-300";
+        let colorClass = type === 'success' ? 'bg-emerald-500' : (type === 'error' ? 'bg-red-500' : 'bg-blue-500');
+        const $msg = $(`<div class="${baseClass} ${colorClass}">${message}</div>`);
+        $('#message-box').append($msg);
+        $msg.fadeIn(300).delay(3000).fadeOut(500, function() { $(this).remove(); });
+    }
 
-        <div class="p-3">
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input
-                  type="text"
-                  class="form-control"
-                  placeholder="Search bookings..."
-                />
-              </div>
-            </div>
-            <div class="col-md-6 text-end">
-              <select class="form-select d-inline-block" style="width: auto">
-                <option>All Status</option>
-                <option>Confirmed</option>
-                <option>Pending</option>
-                <option>Cancelled</option>
-              </select>
-            </div>
-          </div>
+    /**
+     * Shows the specified view. On this page, it just shows booking-view.
+     */
+    function showView(viewId) {
+        $('.view').hide();
+        $(`#${viewId}`).show();
+        
+        // On this page, booking is always active
+        $('#nav-booking-link').addClass('active');
 
-          <div class="table-responsive">
-            <table class="table table-hover">
-              <thead class="table-light">
-                <tr>
-                  <th>ID</th>
-                  <th>Customer</th>
-                  <th>Service</th>
-                  <th>Date & Time</th>
-                  <th>Status</th>
-                  <th>Amount</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr th:each="booking : ${bookings}">
-                  <td th:text="${booking.id}">#1001</td>
-                  <td>
-                    <div class="d-flex align-items-center">
-                      <div
-                        class="user-avatar me-2"
-                        style="width: 32px; height: 32px; font-size: 0.75rem"
-                      >
-                        <span th:text="${booking.customerInitial}">JD</span>
-                      </div>
-                      <span th:text="${booking.customerName}">John Doe</span>
+        // Run specific view loading logic
+        if (viewId === 'booking-view') {
+            renderMachineList('All');
+        }
+    }
+
+    // --- AUTHENTICATION LOGIC ---
+    function authenticateUser(user) {
+        $('#navbar').removeClass('hidden');
+        $('#user-info').text(`${user.name} (${user.role})`).show();
+        
+        // This page is only for students, so we don't need role checks
+        // We just show the booking view
+        showView('booking-view');
+    }
+
+    // --- DASHBOARD LOGIC (REMOVED) ---
+
+    // --- BOOKING LOGIC (Student) ---
+    function renderMachineList(filterType) {
+        const $list = $('#machine-list').empty();
+        let filteredMachines = machines;
+
+        if (filterType !== 'All') {
+            filteredMachines = machines.filter(m => m.type === filterType);
+        }
+
+        if (filteredMachines.length === 0) {
+            $list.html(`<p class="text-gray-500 col-span-full">No ${filterType} machines available in the system.</p>`);
+            return;
+        }
+
+        filteredMachines.forEach(machine => {
+            const isAvailable = machine.status === 'Available';
+            const statusClass = isAvailable ? 'machine-available' : (machine.status === 'In Use' ? 'machine-in-use' : 'border-left: 4px solid #9ca3af;');
+            const statusText = isAvailable ? 'Ready Now' : machine.next_available;
+            const buttonText = isAvailable ? 'Book Now' : 'View Status';
+            const buttonColor = isAvailable ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-gray-400 cursor-default';
+
+            const html = `
+                <div class="card ${statusClass} flex justify-between items-center transition duration-300 hover:shadow-lg">
+                    <div>
+                        <p class="text-xl font-bold text-gray-800">${machine.name} (${machine.type})</p>
+                        <p class="text-sm text-gray-500">${machine.location} - ${machine.capacity}</p>
+                        <p class="mt-2 font-semibold text-base ${isAvailable ? 'text-emerald-600' : 'text-orange-600'}">
+                            Status: ${machine.status}
+                        </p>
+                        <p class="text-xs text-gray-700">Next Available: ${statusText}</p>
                     </div>
-                  </td>
-                  <td th:text="${booking.service}">Hair Styling</td>
-                  <td
-                    th:text="${#temporals.format(booking.bookingDate, 'MMM dd, yyyy HH:mm')}"
-                  >
-                    Oct 28, 2025 10:00
-                  </td>
-                  <td>
-                    <span
-                      class="badge"
-                      th:classappend="${booking.status.toString() == 'CONFIRMED' ? 'bg-success' : booking.status.toString() == 'PENDING' ? 'bg-warning' : booking.status.toString() == 'CANCELLED' ? 'bg-danger' : 'bg-secondary'}"
-                      th:text="${booking.status.displayName}"
-                    </span>
-                  </td>
-                  <td th:text="${'$' + booking.amount}">$75.00</td>
-                  <td>
-                    <button
-                      class="btn btn-sm btn-primary btn-action"
-                      title="View"
-                    >
-                      <i class="fas fa-eye"></i>
+                    <button data-id="${machine.id}" class="machine-book-btn text-white py-2 px-4 rounded-full text-sm font-semibold ${buttonColor}" ${isAvailable ? '' : 'disabled'}>
+                        ${buttonText}
                     </button>
-                    <button
-                      class="btn btn-sm btn-success btn-action"
-                      title="Edit"
-                    >
-                      <i class="fas fa-edit"></i>
-                    </button>
-                    <button
-                      class="btn btn-sm btn-danger btn-action"
-                      title="Delete"
-                    >
-                      <i class="fas fa-trash"></i>
-                    </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-  </body>
+                </div>
+            `;
+            $list.append(html);
+        });
+    }
+
+    // Filter change handler
+    $('input[name="machine_type"]').on('change', function() {
+        renderMachineList($(this).val());
+    });
+
+    // Booking handler (Delegated event)
+    $('#machine-list').on('click', '.machine-book-btn', function() {
+        const machineId = $(this).data('id');
+        const machine = machines.find(m => m.id === machineId);
+
+        if (!machine || machine.status !== 'Available') {
+            showMessage('This machine is not currently available for booking.', 'error');
+            return;
+        }
+
+        const $btn = $(this);
+        $btn.text('Booking...').prop('disabled', true).removeClass('bg-emerald-500 hover:bg-emerald-600').addClass('bg-gray-500');
+
+        setTimeout(() => {
+            machine.status = 'In Use';
+            machine.next_available = new Date(Date.now() + 60 * 60 * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            renderMachineList($('input[name="machine_type"]:checked').val());
+            showMessage(`Success! You have booked ${machine.name} until ${machine.next_available}.`, 'success');
+        }, 1000);
+    });
+
+    // --- ADMIN LOGIC (REMOVED) ---
+
+    // --- INITIALIZATION ---
+    $(document).ready(function() {
+        authenticateUser(currentUser);
+        // Note: The click handler for nav tabs is removed, 
+        // as this page only has standard <a> links for navigation.
+    });
+
+</script>
+</body>
 </html>
