@@ -16,12 +16,12 @@ public class FrontendController {
 
     @GetMapping("/student/dashboard")
     public String studentDashboard() {
-        return "Dashboard";
+        return "dashboard";
     }
 
     @GetMapping("/manager/dashboard")
     public String managerDashboard() {
-        return "Dashboard";
+        return "dashboard";
     }
 
     @GetMapping("/booking")
