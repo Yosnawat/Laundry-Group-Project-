@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>Dashboard</title>
+    
+    <th:block layout:fragment="extra-css">
+        <style>
+            .stats-card {
+                background: white;
+                border-radius: 0.75rem;
+                padding: 1.5rem;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                transition: transform 0.3s, box-shadow 0.3s;
+                height: 100%;
+            }
+            
+            .stats-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            }
+            
+            .stats-icon {
+                width: 60px;
+                height: 60px;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.5rem;
+                color: white;
+            }
+            
+            .stats-icon.blue {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+            
+            .stats-icon.green {
+                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+            }
+            
+            .stats-icon.orange {
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            }
+            
+            .stats-icon.purple {
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            }
+            
+            .chart-card {
+                background: white;
+                border-radius: 0.75rem;
+                padding: 1.5rem;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            }
+            
+            .recent-orders-table {
+                background: white;
+                border-radius: 0.75rem;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+                overflow: hidden;
+            }
+            
+            .table-header {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 1.25rem 1.5rem;
+            }
+            
+            .badge-status {
+                padding: 0.4rem 0.8rem;
+                border-radius: 20px;
+                font-size: 0.75rem;
+                font-weight: 600;
+            }
+            
+            .progress-thin {
+                height: 8px;
+                border-radius: 10px;
+            }
+        </style>
+    </th:block>
+</head>
+<body>
+    <div layout:fragment="page-title">
+        <div>
+            <h4 class="mb-0">Dashboard</h4>
+            <small class="text-muted">Welcome back! Here's what's happening today.</small>
+        </div>
+    </div>
+    
+    <div layout:fragment="content">
+        <!-- Statistics Cards -->
+        <div class="row g-4 mb-4">
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-muted mb-2" style="font-size: 0.85rem; font-weight: 600;">TODAY'S ORDERS</div>
+                            <h2 class="mb-0 fw-bold" th:text="${todayOrders} ?: 24">24</h2>
+                            <small class="text-success">
+                                <i class="fas fa-arrow-up"></i> 12% from yesterday
+                            </small>
+                        </div>
+                        <div class="stats-icon blue">
+                            <i class="fas fa-shopping-bag"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-muted mb-2" style="font-size: 0.85rem; font-weight: 600;">IN PROGRESS</div>
+                            <h2 class="mb-0 fw-bold" th:text="${inProgress} ?: 18">18</h2>
+                            <small class="text-warning">
+                                <i class="fas fa-clock"></i> 3 urgent
+                            </small>
+                        </div>
+                        <div class="stats-icon orange">
+                            <i class="fas fa-sync-alt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-muted mb-2" style="font-size: 0.85rem; font-weight: 600;">READY FOR PICKUP</div>
+                            <h2 class="mb-0 fw-bold" th:text="${readyPickup} ?: 12">12</h2>
+                            <small class="text-info">
+                                <i class="fas fa-box"></i> Pending collection
+                            </small>
+                        </div>
+                        <div class="stats-icon purple">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6">
+                <div class="stats-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="text-muted mb-2" style="font-size: 0.85rem; font-weight: 600;">TODAY'S REVENUE</div>
+                            <h2 class="mb-0 fw-bold" th:text="${'$' + (todayRevenue ?: 1248)}">$1,248</h2>
+                            <small class="text-success">
+                                <i class="fas fa-arrow-up"></i> 8% increase
+                            </small>
+                        </div>
+                        <div class="stats-icon green">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Charts Row -->
+        <div class="row g-4 mb-4">
+            <div class="col-xl-8">
+                <div class="chart-card">
+                    <h5 class="mb-3"><i class="fas fa-chart-line text-primary"></i> Weekly Revenue Overview</h5>
+                    <canvas id="revenueChart" height="80"></canvas>
+                </div>
+            </div>
+            
+            <div class="col-xl-4">
+                <div class="chart-card">
+                    <h5 class="mb-3"><i class="fas fa-chart-pie text-primary"></i> Service Distribution</h5>
+                    <canvas id="serviceChart" height="200"></canvas>
+                    <div class="mt-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="fas fa-circle text-primary"></i> Wash & Iron</span>
+                            <strong>45%</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span><i class="fas fa-circle text-success"></i> Dry Clean</span>
+                            <strong>30%</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span><i class="fas fa-circle text-warning"></i> Iron Only</span>
+                            <strong>25%</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Orders Table -->
+        <div class="recent-orders-table">
+            <div class="table-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-list"></i> Recent Orders</h5>
+                    <a href="#" th:href="@{/orders}" class="btn btn-light btn-sm">View All</a>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Service</th>
+                            <th>Items</th>
+                            <th>Status</th>
+                            <th>Pickup Date</th>
+                            <th>Amount</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="order : ${recentOrders}">
+                            <td>
+                                <strong th:text="${order.id}">#LDR-1001</strong>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar me-2" style="width: 32px; height: 32px; font-size: 0.75rem; background: linear-gradient(135deg, #667eea, #764ba2);">
+                                        <span th:text="${order.customerInitial}">JD</span>
+                                    </div>
+                                    <div>
+                                        <div th:text="${order.customerName}">John Doe</div>
+                                        <small class="text-muted" th:text="${order.phone}">+1 234-567-8900</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td th:text="${order.service}">Wash & Iron</td>
+                            <td th:text="${order.items + ' kg'}">5 kg</td>
+                            <td>
+                                <span class="badge-status" 
+                                      th:classappend="${order.status == 'Completed'} ? 'bg-success' : 
+                                                     ${order.status == 'In Progress'} ? 'bg-warning text-dark' : 
+                                                     ${order.status == 'Ready'} ? 'bg-info' : 'bg-secondary'"
+                                      th:text="${order.status}">
+                                    In Progress
+                                </span>
+                            </td>
+                            <td th:text="${#temporals.format(order.pickupDate, 'MMM dd, yyyy')}">Oct 29, 2025</td>
+                            <td>
+                                <strong th:text="${'$' + order.amount}">$45.00</strong>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <!-- Sample static data if no orders -->
+                        <tr th:if="${#lists.isEmpty(recentOrders)}">
+                            <td><strong>#LDR-1001</strong></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar me-2" style="width: 32px; height: 32px; font-size: 0.75rem; background: linear-gradient(135deg, #667eea, #764ba2);">
+                                        JD
+                                    </div>
+                                    <div>
+                                        <div>John Doe</div>
+                                        <small class="text-muted">+1 234-567-8900</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Wash & Iron</td>
+                            <td>5 kg</td>
+                            <td><span class="badge-status bg-warning text-dark">In Progress</span></td>
+                            <td>Oct 29, 2025</td>
+                            <td><strong>$45.00</strong></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recentOrders)}">
+                            <td><strong>#LDR-1002</strong></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar me-2" style="width: 32px; height: 32px; font-size: 0.75rem; background: linear-gradient(135deg, #11998e, #38ef7d);">
+                                        SA
+                                    </div>
+                                    <div>
+                                        <div>Sarah Anderson</div>
+                                        <small class="text-muted">+1 234-567-8901</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Dry Clean</td>
+                            <td>3 items</td>
+                            <td><span class="badge-status bg-info">Ready</span></td>
+                            <td>Oct 28, 2025</td>
+                            <td><strong>$75.00</strong></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recentOrders)}">
+                            <td><strong>#LDR-1003</strong></td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar me-2" style="width: 32px; height: 32px; font-size: 0.75rem; background: linear-gradient(135deg, #f093fb, #f5576c);">
+                                        MJ
+                                    </div>
+                                    <div>
+                                        <div>Michael Johnson</div>
+                                        <small class="text-muted">+1 234-567-8902</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>Iron Only</td>
+                            <td>8 items</td>
+                            <td><span class="badge-status bg-success">Completed</span></td>
+                            <td>Oct 27, 2025</td>
+                            <td><strong>$25.00</strong></td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <th:block layout:fragment="extra-scripts">
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+        <script>
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: [1200, 1900, 1500, 2100, 1800, 2400, 2200],
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+            
+            // Service Distribution Chart
+            const serviceCtx = document.getElementById('serviceChart').getContext('2d');
+            new Chart(serviceCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Wash & Iron', 'Dry Clean', 'Iron Only'],
+                    datasets: [{
+                        data: [45, 30, 25],
+                        backgroundColor: ['#667eea', '#11998e', '#f5576c']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        </script>
+    </th:block>
+</body>
+</html>

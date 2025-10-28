@@ -58,6 +58,12 @@
             <artifactId>r2dbc-spi</artifactId>
         </dependency>
 
+        <!-- Spring Boot Starter Thymeleaf for template rendering -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
         <!-- Spring Boot DevTools for hot reload -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

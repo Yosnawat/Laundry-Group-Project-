@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+  layout:decorate="~{layout}"
+>
+  <head>
+    <title>Bookings</title>
+
+    <th:block layout:fragment="extra-css">
+      <style>
+        .stats-card {
+          background: white;
+          border-radius: 0.5rem;
+          padding: 1.5rem;
+          box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+          border-left: 4px solid;
+        }
+
+        .stats-card.primary {
+          border-left-color: #4e73df;
+        }
+
+        .stats-card.success {
+          border-left-color: #1cc88a;
+        }
+
+        .stats-card.warning {
+          border-left-color: #f6c23e;
+        }
+
+        .stats-card.danger {
+          border-left-color: #e74a3b;
+        }
+
+        .booking-table {
+          background: white;
+          border-radius: 0.5rem;
+          box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+          overflow: hidden;
+        }
+
+        .table-header {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 1.5rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+
+        .badge {
+          padding: 0.35rem 0.65rem;
+          font-size: 0.75rem;
+          font-weight: 600;
+        }
+
+        .btn-action {
+          padding: 0.25rem 0.5rem;
+          font-size: 0.875rem;
+        }
+
+        .search-box {
+          position: relative;
+        }
+
+        .search-box input {
+          padding-left: 2.5rem;
+        }
+
+        .search-box i {
+          position: absolute;
+          left: 1rem;
+          top: 50%;
+          transform: translateY(-50%);
+          color: #858796;
+        }
+      </style>
+    </th:block>
+  </head>
+  <body>
+    <div layout:fragment="page-title">
+      <h4 class="mb-0">Booking Management</h4>
+    </div>
+
+    <div layout:fragment="content">
+      <!-- Statistics Cards -->
+      <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="stats-card primary">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div
+                  class="text-secondary text-uppercase mb-1"
+                  style="font-size: 0.8rem; font-weight: 600"
+                >
+                  Total Bookings
+                </div>
+                <div
+                  class="h3 mb-0 font-weight-bold"
+                  th:text="${totalBookings} ?: 245"
+                >
+                  245
+                </div>
+              </div>
+              <div class="text-primary" style="font-size: 2rem">
+                <i class="fas fa-calendar-check"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="stats-card success">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div
+                  class="text-secondary text-uppercase mb-1"
+                  style="font-size: 0.8rem; font-weight: 600"
+                >
+                  Confirmed
+                </div>
+                <div
+                  class="h3 mb-0 font-weight-bold"
+                  th:text="${confirmedBookings} ?: 187"
+                >
+                  187
+                </div>
+              </div>
+              <div class="text-success" style="font-size: 2rem">
+                <i class="fas fa-check-circle"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="stats-card warning">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div
+                  class="text-secondary text-uppercase mb-1"
+                  style="font-size: 0.8rem; font-weight: 600"
+                >
+                  Pending
+                </div>
+                <div
+                  class="h3 mb-0 font-weight-bold"
+                  th:text="${pendingBookings} ?: 42"
+                >
+                  42
+                </div>
+              </div>
+              <div class="text-warning" style="font-size: 2rem">
+                <i class="fas fa-clock"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+          <div class="stats-card danger">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>
+                <div
+                  class="text-secondary text-uppercase mb-1"
+                  style="font-size: 0.8rem; font-weight: 600"
+                >
+                  Cancelled
+                </div>
+                <div
+                  class="h3 mb-0 font-weight-bold"
+                  th:text="${cancelledBookings} ?: 16"
+                >
+                  16
+                </div>
+              </div>
+              <div class="text-danger" style="font-size: 2rem">
+                <i class="fas fa-times-circle"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bookings Table -->
+      <div class="booking-table">
+        <div class="table-header">
+          <h5 class="mb-0"><i class="fas fa-list"></i> Recent Bookings</h5>
+          <button
+            class="btn btn-light btn-sm"
+            data-bs-toggle="modal"
+            data-bs-target="#newBookingModal"
+          >
+            <i class="fas fa-plus"></i> New Booking
+          </button>
+        </div>
+
+        <div class="p-3">
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input
+                  type="text"
+                  class="form-control"
+                  placeholder="Search bookings..."
+                />
+              </div>
+            </div>
+            <div class="col-md-6 text-end">
+              <select class="form-select d-inline-block" style="width: auto">
+                <option>All Status</option>
+                <option>Confirmed</option>
+                <option>Pending</option>
+                <option>Cancelled</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th>ID</th>
+                  <th>Customer</th>
+                  <th>Service</th>
+                  <th>Date & Time</th>
+                  <th>Status</th>
+                  <th>Amount</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr th:each="booking : ${bookings}">
+                  <td th:text="${booking.id}">#1001</td>
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div
+                        class="user-avatar me-2"
+                        style="width: 32px; height: 32px; font-size: 0.75rem"
+                      >
+                        <span th:text="${booking.customerInitial}">JD</span>
+                      </div>
+                      <span th:text="${booking.customerName}">John Doe</span>
+                    </div>
+                  </td>
+                  <td th:text="${booking.service}">Hair Styling</td>
+                  <td
+                    th:text="${#temporals.format(booking.bookingDate, 'MMM dd, yyyy HH:mm')}"
+                  >
+                    Oct 28, 2025 10:00
+                  </td>
+                  <td>
+                    <span
+                      class="badge"
+                      th:classappend="${booking.status == 'Confirmed'} ? 'bg-success' : 
+                                                         ${booking.status == 'Pending'} ? 'bg-warning' : 
+                                                         ${booking.status == 'Cancelled'} ? 'bg-danger' : 'bg-secondary'"
+                      th:text="${booking.status}"
+                      Confirmed
+                    </span>
+                  </td>
+                  <td th:text="${'$' + booking.amount}">$75.00</td>
+                  <td>
+                    <button
+                      class="btn btn-sm btn-primary btn-action"
+                      title="View"
+                    >
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button
+                      class="btn btn-sm btn-success btn-action"
+                      title="Edit"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button
+                      class="btn btn-sm btn-danger btn-action"
+                      title="Delete"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

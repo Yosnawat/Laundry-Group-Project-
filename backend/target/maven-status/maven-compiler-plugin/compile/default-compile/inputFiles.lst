@@ -6,8 +6,10 @@
 /workspaces/Laundry-Group-Project-/backend/src/main/java/App.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/service/UserService.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/model/AppConstants.java
+/workspaces/Laundry-Group-Project-/backend/src/main/java/controller/AuthController.java
+/workspaces/Laundry-Group-Project-/backend/src/main/java/controller/FrontendController.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/model/Role.java
-/workspaces/Laundry-Group-Project-/backend/src/main/java/PasswordConfig.java
+/workspaces/Laundry-Group-Project-/backend/src/main/java/config/PasswordConfig.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/model/Rating.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/repo/MachineRepository.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/model/User.java
