@@ -1,4 +1,3 @@
-package th.mfu;
 
 import java.util.List;
 import java.util.Map;
