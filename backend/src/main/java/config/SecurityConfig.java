@@ -19,8 +19,7 @@ public class SecurityConfig {
         http
             .csrf().disable()
             .authorizeRequests()
-                .antMatchers("/", "/login", "/register", "/booking", "/rating", "/timer", "/student/dashboard", "/manager/dashboard", "/api/auth/**", "/h2-console/**").permitAll()
-                .anyRequest().authenticated()
+                .antMatchers("/**").permitAll()
             .and()
                 .httpBasic();
 

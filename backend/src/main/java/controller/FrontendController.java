@@ -20,7 +20,7 @@ public class FrontendController {
 
     @GetMapping("/")
     public String home() {
-        return "redirect:/login";
+        return "redirect:/booking";
     }
 
     @GetMapping("/student/dashboard")
@@ -44,13 +44,29 @@ public class FrontendController {
         return "booking";
     }
 
+    @GetMapping("/student/booking")
+    public String studentBooking(Model model) {
+        // Add booking data to model
+        model.addAttribute("bookings", bookingService.getAllBookings());
+        model.addAttribute("totalBookings", bookingService.getTotalBookings());
+        model.addAttribute("confirmedBookings", bookingService.getBookingCountByStatus(BookingStatus.CONFIRMED));
+        model.addAttribute("pendingBookings", bookingService.getBookingCountByStatus(BookingStatus.PENDING));
+        model.addAttribute("cancelledBookings", bookingService.getBookingCountByStatus(BookingStatus.CANCELLED));
+        return "booking";
+    }
+
     @GetMapping("/rating")
-    public String rating() {
+    public String rating(Model model) {
         return "rating";
     }
 
     @GetMapping("/timer")
     public String timer() {
         return "timer";
+    }
+
+    @GetMapping("/test")
+    public String test() {
+        return "Test page works!";
     }
 }
