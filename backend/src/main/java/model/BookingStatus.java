@@ -3,7 +3,9 @@ package model;
 public enum BookingStatus {
     CONFIRMED("Confirmed"),
     PENDING("Pending"),
-    CANCELLED("Cancelled");
+    CANCELLED("Cancelled"),
+    IN_PROGRESS("In Progress"),
+    COMPLETED("Completed");
 
     private final String displayName;
 

@@ -93,4 +93,49 @@ public class BookingService {
     public List<Booking> getBookingsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
         return bookingRepository.findByBookingDateBetween(startDate, endDate);
     }
+
+    // Mark booking as in progress (when user starts using the machine)
+    public Booking startBooking(Long bookingId) {
+        Optional<Booking> bookingOptional = bookingRepository.findById(bookingId);
+        if (bookingOptional.isPresent()) {
+            Booking booking = bookingOptional.get();
+            if (booking.getStatus() == BookingStatus.CONFIRMED) {
+                booking.setStatus(BookingStatus.IN_PROGRESS);
+                return bookingRepository.save(booking);
+            } else {
+                throw new IllegalStateException("Only confirmed bookings can be started");
+            }
+        }
+        return null;
+    }
+
+    // Mark booking as completed (when user finishes using the machine)
+    public Booking completeBooking(Long bookingId) {
+        Optional<Booking> bookingOptional = bookingRepository.findById(bookingId);
+        if (bookingOptional.isPresent()) {
+            Booking booking = bookingOptional.get();
+            if (booking.getStatus() == BookingStatus.IN_PROGRESS) {
+                booking.setStatus(BookingStatus.COMPLETED);
+                return bookingRepository.save(booking);
+            } else {
+                throw new IllegalStateException("Only in-progress bookings can be completed");
+            }
+        }
+        return null;
+    }
+
+    // Get completed bookings for a user that can be rated
+    public List<Booking> getCompletedBookingsForRating(Long userId) {
+        return bookingRepository.findByUserIdAndStatus(userId, BookingStatus.COMPLETED);
+    }
+
+    // Get all completed bookings
+    public List<Booking> getCompletedBookings() {
+        return bookingRepository.findByStatus(BookingStatus.COMPLETED);
+    }
+
+    // Get in-progress bookings
+    public List<Booking> getInProgressBookings() {
+        return bookingRepository.findByStatus(BookingStatus.IN_PROGRESS);
+    }
 }

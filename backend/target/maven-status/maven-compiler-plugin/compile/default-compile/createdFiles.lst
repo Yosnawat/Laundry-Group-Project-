@@ -1,5 +1,6 @@
 model/Machine.class
 controller/AuthController$RegisterRequest.class
+controller/RatingController$RatingRequest.class
 config/CorsConfig.class
 App.class
 service/BookingService.class
@@ -9,11 +10,13 @@ controller/AuthController.class
 config/SecurityConfig.class
 repo/UserRepository.class
 model/BookingStatus.class
+controller/RatingController$MachineRatingStats.class
 repo/RatingRepository.class
 controller/AuthController$LoginRequest.class
 model/Booking.class
 model/AppConstants.class
 AuthController.class
+controller/RatingController.class
 repo/MachineRepository.class
 repo/BookingRepository.class
 service/RatingService.class

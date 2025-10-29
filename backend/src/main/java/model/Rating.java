@@ -2,10 +2,16 @@ package model;
 
 import java.time.LocalDateTime;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.PrePersist;
 import javax.persistence.Table;
 
 @Entity
@@ -17,15 +23,35 @@ public class Rating {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Foreign keys
-    private Long serviceId;
-    private Long userId;
+    // Foreign key relationships
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    // Rating value
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "machine_id", nullable = false)
+    private Machine machine;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id", nullable = false)
+    private Booking booking;
+
+    // Rating value (1-5 stars)
+    @Column(nullable = false)
     private Integer rating;
 
+    // Review text
+    @Column(columnDefinition = "TEXT")
+    private String reviewText;
+
     // Timestamp
-    private LocalDateTime createdAt = LocalDateTime.now();
+    @Column(nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 
     // ----- Getters and Setters -----
 
@@ -37,20 +63,28 @@ public class Rating {
         this.id = id;
     }
 
-    public Long getServiceId() {
-        return serviceId;
+    public User getUser() {
+        return user;
     }
 
-    public void setServiceId(Long serviceId) {
-        this.serviceId = serviceId;
+    public void setUser(User user) {
+        this.user = user;
     }
 
-    public Long getUserId() {
-        return userId;
+    public Machine getMachine() {
+        return machine;
     }
 
-    public void setUserId(Long userId) {
-        this.userId = userId;
+    public void setMachine(Machine machine) {
+        this.machine = machine;
+    }
+
+    public Booking getBooking() {
+        return booking;
+    }
+
+    public void setBooking(Booking booking) {
+        this.booking = booking;
     }
 
     public Integer getRating() {
@@ -61,11 +95,28 @@ public class Rating {
         this.rating = rating;
     }
 
+    public String getReviewText() {
+        return reviewText;
+    }
+
+    public void setReviewText(String reviewText) {
+        this.reviewText = reviewText;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    // Helper methods for API responses
+    public String getUserName() {
+        return user != null ? user.getName() : "Unknown User";
+    }
+
+    public String getMachineName() {
+        return machine != null ? machine.getMachineNumber() : "Unknown Machine";
     }
 }

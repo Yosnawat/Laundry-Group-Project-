@@ -15,6 +15,7 @@
 /workspaces/Laundry-Group-Project-/backend/src/main/java/service/UserService.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/model/AppConstants.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/service/BookingService.java
+/workspaces/Laundry-Group-Project-/backend/src/main/java/controller/RatingController.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/config/PasswordConfig.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/repo/MachineRepository.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/model/User.java

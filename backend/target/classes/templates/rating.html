@@ -1,1 +1,142 @@
-//add code //add code
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate Your Laundry</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+        .app-container { max-width: 1000px; width: 95%; margin: 20px auto; background: white; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); }
+        .view { display: block; padding: 2rem; } /* ทำให้ view แสดงผลเลย */
+        .primary-btn { background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; transition: background-color 0.3s; }
+        .primary-btn:hover { background-color: #2563eb; }
+        .card { background-color: #f9fafb; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
+        .tab-btn { display: inline-block; padding: 0.25rem 0.75rem; font-size: 0.875rem; border-bottom-width: 2px; border-color: transparent; }
+        .tab-btn:hover { border-color: #9ca3af; }
+        
+        /* Star Rating Styles */
+        .star-rating .star {
+            cursor: pointer;
+            color: #d1d5db; /* gray-300 */
+            font-size: 2.5rem;
+            transition: color 0.2s;
+        }
+        .star-rating .star:hover,
+        .star-rating .star.selected {
+            color: #f59e0b; /* amber-500 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <nav id="navbar" class="p-4 border-b border-gray-100 flex justify-between items-center rounded-t-xl bg-gray-50">
+        <h1 class="text-2xl font-bold text-gray-800">Laundry Hub</h1>
+        <div class="flex space-x-4 items-center">
+            <div class="space-x-2">
+                <a href="/dashboard" class="tab-btn">Dashboard</a>
+                <a href="/booking" class="tab-btn">Booking</a>
+            </div>
+            <span id="user-info" class="text-sm text-gray-600 font-medium sm:inline">(User Name)</span>
+        </div>
+    </nav>
+
+    <div id="rating-view" class="view text-center">
+        
+        <div id="thank-you-msg" class="hidden">
+            <h2 class="text-3xl font-bold mb-4 text-emerald-600">Thank You!</h2>
+            <p class="text-lg text-gray-700 mb-8">Your feedback helps us improve our service.</p>
+            <div class="card max-w-md mx-auto p-8">
+                <svg class="w-24 h-24 text-emerald-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+             <a href="/dashboard" class="primary-btn mt-8">
+                Back to Dashboard
+            </a>
+        </div>
+        
+        <form id="rating-form" class="max-w-md mx-auto">
+            <h2 class="text-3xl font-bold mb-4 text-gray-800">How was your laundry?</h2>
+            <p class="text-gray-600 mb-8">Please rate your experience with <span class="font-semibold text-blue-600" th:text="${machineName ?: 'Washer 1'}">Washer 1</span>.</p>
+
+            <div class="card">
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Your Rating</label>
+                    <div class="star-rating flex justify-center space-x-2">
+                        <span class="star" data-value="1">&#9733;</span>
+                        <span class="star" data-value="2">&#9733;</span>
+                        <span class="star" data-value="3">&#9733;</span>
+                        <span class="star" data-value="4">&#9733;</span>
+                        <span class="star" data-value="5">&#9733;</span>
+                    </div>
+                    <input type="hidden" id="rating-value" name="ratingValue" value="0" />
+                    <input type="hidden" id="machine-id" name="machineId" th:value="${machineId ?: 'W-01'}" />
+                </div>
+
+                <div class="mb-6">
+                    <label for="comments" class="block text-sm font-medium text-gray-700 text-left mb-2">Additional Comments (Optional)</label>
+                    <textarea id="comments" name="comments" rows="4" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="The machine was clean, the cycle was fast..."></textarea>
+                </div>
+
+                <button type="submit" class="w-full primary-btn">
+                    Submit Feedback
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // --- Star Rating Logic ---
+    let currentRating = 0;
+    const $stars = $('.star-rating .star');
+
+    $stars.on('click', function() {
+        currentRating = $(this).data('value');
+        $('#rating-value').val(currentRating); // อัปเดตค่าใน input ที่ซ่อนอยู่
+
+        $stars.each(function() {
+            if ($(this).data('value') <= currentRating) {
+                $(this).addClass('selected');
+            } else {
+                $(this).removeClass('selected');
+            }
+        });
+    });
+
+    $stars.on('mouseover', function() {
+        const hoverValue = $(this).data('value');
+        $stars.each(function() {
+            if ($(this).data('value') <= hoverValue) {
+                $(this).addClass('selected');
+            } else {
+                $(this).removeClass('selected');
+            }
+        });
+    });
+
+    $stars.on('mouseout', function() {
+        $stars.each(function() {
+            if ($(this).data('value') <= currentRating) {
+                $(this).addClass('selected');
+            } else {
+                $(this).removeClass('selected');
+            }
+        });
+    });
+
+    // --- Form Submission Logic ---
+    $('#rating-form').on('submit', function(e) {
+        e.preventDefault(); // หยุดการส่งฟอร์มแบบปกติ
+
+        const rating = $('#rating-value').val();
+        const comments = $('#comments').val();
+        const machineId = $('#machine-id').val();
+
+        if (rating == 0) {
+            alert("Please select a star rating first.");
+            return;
+        }

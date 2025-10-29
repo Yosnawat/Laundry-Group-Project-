@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.*;
 import service.BookingService;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -110,5 +112,62 @@ public class BookingController {
             @RequestParam LocalDateTime endDate) {
         List<Booking> bookings = bookingService.getBookingsByDateRange(startDate, endDate);
         return ResponseEntity.ok(bookings);
+    }
+
+    // Start a booking (mark as in progress)
+    @PostMapping("/{id}/start")
+    public ResponseEntity<?> startBooking(@PathVariable Long id) {
+        try {
+            Booking updatedBooking = bookingService.startBooking(id);
+            if (updatedBooking != null) {
+                return ResponseEntity.ok(updatedBooking);
+            }
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage(), "INVALID_STATUS"));
+        }
+    }
+
+    // Complete a booking (mark as completed)
+    @PostMapping("/{id}/complete")
+    public ResponseEntity<?> completeBooking(@PathVariable Long id) {
+        try {
+            Booking updatedBooking = bookingService.completeBooking(id);
+            if (updatedBooking != null) {
+                return ResponseEntity.ok(updatedBooking);
+            }
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage(), "INVALID_STATUS"));
+        }
+    }
+
+    // Get completed bookings for a user that can be rated
+    @GetMapping("/user/{userId}/completed")
+    public ResponseEntity<List<Booking>> getCompletedBookingsForRating(@PathVariable Long userId) {
+        List<Booking> bookings = bookingService.getCompletedBookingsForRating(userId);
+        return ResponseEntity.ok(bookings);
+    }
+
+    // Get all completed bookings
+    @GetMapping("/completed")
+    public ResponseEntity<List<Booking>> getCompletedBookings() {
+        List<Booking> bookings = bookingService.getCompletedBookings();
+        return ResponseEntity.ok(bookings);
+    }
+
+    // Get all in-progress bookings
+    @GetMapping("/in-progress")
+    public ResponseEntity<List<Booking>> getInProgressBookings() {
+        List<Booking> bookings = bookingService.getInProgressBookings();
+        return ResponseEntity.ok(bookings);
+    }
+
+    // Helper method to create error response
+    private Map<String, String> createErrorResponse(String message, String code) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", message);
+        error.put("code", code);
+        return error;
     }
 }
