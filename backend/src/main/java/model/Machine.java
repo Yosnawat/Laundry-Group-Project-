@@ -22,7 +22,6 @@ public class Machine {
     private String machineNumber;
 
     private String status;
-    private String type;
     private String location;
     private String description;
 
@@ -56,14 +55,6 @@ public class Machine {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
     }
 
     public String getLocation() {
