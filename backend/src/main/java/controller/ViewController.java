@@ -72,5 +72,5 @@ public class ViewController {
     @GetMapping("/timer")
     public String timer() {
         return "timer";
-    }
+    }//
 }

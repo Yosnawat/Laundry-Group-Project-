@@ -93,7 +93,6 @@ public class BookingService {
         return false;
     }
 
-    // Get bookings by date range
     public List<Booking> getBookingsByDateRange(LocalDateTime startDate, LocalDateTime endDate) {
         return bookingRepository.findByBookingDateBetween(startDate, endDate);
     }

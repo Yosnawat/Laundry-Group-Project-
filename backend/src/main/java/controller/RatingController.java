@@ -184,5 +184,5 @@ public class RatingController {
 
         public Map<Integer, Long> getRatingDistribution() { return ratingDistribution; }
         public void setRatingDistribution(Map<Integer, Long> ratingDistribution) { this.ratingDistribution = ratingDistribution; }
-    }
+    }//
 }

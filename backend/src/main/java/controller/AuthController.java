@@ -102,5 +102,5 @@ public class AuthController {
         )).collect(Collectors.toList());
 
         return ResponseEntity.ok(Map.of("users", safe));
-    }
+    }//
 }

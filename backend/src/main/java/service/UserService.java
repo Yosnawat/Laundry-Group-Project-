@@ -28,11 +28,7 @@ public class UserService {
     }
 
     /**
-     * Register a new user.
-     * - validates studentId/email uniqueness
-     * - hashes the provided plain-text password using the configured PasswordEncoder
-     * - saves and returns the persisted User
-     * Throws IllegalArgumentException for duplicate studentId or email.
+     * Register a new user..
      */
     public User register(User user) {
         if (user.getStudentId() != null && userRepository.existsByStudentId(user.getStudentId())) {

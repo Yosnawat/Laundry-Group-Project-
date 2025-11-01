@@ -30,8 +30,6 @@ public class Machine {
     private User currentUser;
 
     private LocalDateTime usageStartTime;
-
-    // Getters and Setters
     
     public Long getId() {
         return id;

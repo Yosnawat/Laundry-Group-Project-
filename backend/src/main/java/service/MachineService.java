@@ -95,17 +95,6 @@ public class MachineService {
         return machineRepository.findByCurrentUserId(userId);
     }
     
-    // Manager creates new machine
-    public Machine createMachine(String machineNumber, String type, String location, String description) {
-        Machine machine = new Machine();
-        machine.setMachineNumber(machineNumber);
-        machine.setLocation(location);
-        machine.setDescription(description);
-        machine.setStatus(AppConstants.STATUS_AVAILABLE);
-        
-        return machineRepository.save(machine);
-    }
-    
     // Manager deletes machine
     public void deleteMachine(Long machineId) {
         machineRepository.deleteById(machineId);
