@@ -130,9 +130,40 @@ public class RatingController {
 
     // Get rating for a specific booking
     @GetMapping("/booking/{bookingId}")
-    public ResponseEntity<Rating> getRatingByBooking(@PathVariable Long bookingId) {
-        Optional<Rating> rating = ratingService.getRatingByBooking(bookingId);
-        return rating.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<?> getRatingByBooking(@PathVariable Long bookingId) {
+        try {
+            Optional<Rating> rating = ratingService.getRatingByBooking(bookingId);
+            if (rating.isPresent()) {
+                return ResponseEntity.ok(rating.get());
+            }
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(createErrorResponse("No rating found for this booking", "RATING_NOT_FOUND"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(createErrorResponse("Error retrieving rating: " + e.getMessage(), "SERVER_ERROR"));
+        }
+    }
+    
+    // Get ratings with reviews for a specific machine
+    @GetMapping("/machine/{machineId}/reviews")
+    public ResponseEntity<List<Rating>> getRatingsWithReviews(@PathVariable Long machineId) {
+        try {
+            List<Rating> ratings = ratingService.getRatingsWithReviews(machineId);
+            return ResponseEntity.ok(ratings);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+    
+    // Get recent ratings across the system
+    @GetMapping("/recent")
+    public ResponseEntity<List<Rating>> getRecentRatings() {
+        try {
+            List<Rating> ratings = ratingService.getRecentRatings();
+            return ResponseEntity.ok(ratings);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     // Helper method to create error response

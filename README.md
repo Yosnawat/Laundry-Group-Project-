@@ -27,18 +27,11 @@ The data will then be stored in a new database for the queue after approved by a
 After confirming, show and display your booked schedule in the dashboard.
 
 SYSTEM INTERACTION BETWEEN MANAGER,REGISTER USER AND BOOK MACHINE!
+```
+ The rating/machine complete and ready for integration 
 
-THINGS TO WORK ON:
-
-Customer  Create new account Login Front page(Time-slot) Book slot page(which Machine)  Timer page after confirm Completion Page End​ Service Page(rating system)  Machine details Page
-
-Admin The money is given Editing Page for Washing Machine Editing Page for Students booked Confirm Page
-
-Database :  Booking Payment Confirmed Students Rating Registered Student
-
-FRONTEND CODING: AJAX/THYMELEAF/REACTJS
-
-
+ Add Exception handling/Validation/Api
+```
 
 
 

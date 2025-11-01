@@ -2,6 +2,9 @@ package service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,6 +14,7 @@ import model.AppConstants;
 import model.Machine;
 import model.User;
 import repo.MachineRepository;
+import repo.RatingRepository;
 import repo.UserRepository;
 
 @Service
@@ -22,6 +26,9 @@ public class MachineService {
     
     @Autowired
     private UserRepository userRepository;
+    
+    @Autowired
+    private RatingRepository ratingRepository;
     
     // Manager assigns machine to a student
     public Machine assignMachine(Long machineId, Long userId) {
@@ -98,5 +105,123 @@ public class MachineService {
     // Manager deletes machine
     public void deleteMachine(Long machineId) {
         machineRepository.deleteById(machineId);
+    }
+    
+    // Get machine by ID
+    public Optional<Machine> getMachineById(Long machineId) {
+        return machineRepository.findById(machineId);
+    }
+    
+    /**
+     * Smart matching algorithm to find the best available machine for a user
+     * Considers: availability, location preferences, and machine ratings
+     */
+    public Optional<Machine> findBestAvailableMachine(Long userId, String preferredLocation) {
+        try {
+            User user = userRepository.findById(userId).orElse(null);
+            if (user == null) {
+                return Optional.empty();
+            }
+            
+            // Get all available machines
+            List<Machine> availableMachines = machineRepository.findByStatus(AppConstants.STATUS_AVAILABLE);
+            
+            if (availableMachines.isEmpty()) {
+                return Optional.empty();
+            }
+            
+            // Filter by preferred location if provided
+            if (preferredLocation != null && !preferredLocation.isEmpty()) {
+                List<Machine> machinesByLocation = availableMachines.stream()
+                    .filter(m -> m.getLocation() != null && m.getLocation().equalsIgnoreCase(preferredLocation))
+                    .collect(Collectors.toList());
+                
+                if (!machinesByLocation.isEmpty()) {
+                    return Optional.of(rankMachinesByRating(machinesByLocation).get(0));
+                }
+            }
+            
+            // Return the best rated machine from all available
+            return Optional.of(rankMachinesByRating(availableMachines).get(0));
+            
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+    
+    /**
+     * Get a list of suggested machines ranked by rating and quality
+     */
+    public List<Machine> getSuggestedMachines(Long userId, String preferredLocation, int limit) {
+        try {
+            User user = userRepository.findById(userId).orElse(null);
+            if (user == null) {
+                return List.of();
+            }
+            
+            List<Machine> availableMachines = machineRepository.findByStatus(AppConstants.STATUS_AVAILABLE);
+            
+            if (availableMachines.isEmpty()) {
+                return List.of();
+            }
+            
+            // Filter by location if provided
+            if (preferredLocation != null && !preferredLocation.isEmpty()) {
+                availableMachines = availableMachines.stream()
+                    .filter(m -> m.getLocation() != null && m.getLocation().equalsIgnoreCase(preferredLocation))
+                    .collect(Collectors.toList());
+            }
+            
+            // Rank by rating and return top N
+            List<Machine> ranked = rankMachinesByRating(availableMachines);
+            return ranked.stream().limit(limit).collect(Collectors.toList());
+            
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+    
+    /**
+     * Get available machines grouped by location
+     */
+    public Map<String, List<Machine>> getAvailableMachinesByLocationGroup() {
+        List<Machine> availableMachines = getAvailableMachines();
+        return availableMachines.stream()
+            .collect(Collectors.groupingBy(m -> m.getLocation() != null ? m.getLocation() : "Unknown"));
+    }
+    
+    /**
+     * Helper method to rank machines by average rating
+     */
+    private List<Machine> rankMachinesByRating(List<Machine> machines) {
+        return machines.stream()
+            .map(machine -> {
+                Double avgRating = ratingRepository.getAverageRatingByMachineId(machine.getId());
+                return new MachineWithRating(machine, avgRating != null ? avgRating : 0.0);
+            })
+            .sorted((a, b) -> Double.compare(b.getAverageRating(), a.getAverageRating()))
+            .map(MachineWithRating::getMachine)
+            .collect(Collectors.toList());
+    }
+    
+    /**
+     * Helper class to associate machines with their average rating
+     */
+    private static class MachineWithRating {
+        private Machine machine;
+        private Double averageRating;
+        
+        public MachineWithRating(Machine machine, Double averageRating) {
+            this.machine = machine;
+            this.averageRating = averageRating;
+        }
+        
+        public Machine getMachine() {
+            return machine;
+        }
+        
+        public Double getAverageRating() {
+            return averageRating;
+        }
     }
 }
