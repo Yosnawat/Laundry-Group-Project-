@@ -3,21 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rate Your Laundry</title>
+    <title>Student Dashboard - Laundry Hub</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- ใช้ Font Poppins ตามธีมของแอป -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #f7f9fb; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
-        .app-container { max-width: 1000px; width: 95%; margin: 20px auto; background: white; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); }
-        .view { display: block; padding: 2rem; } /* ทำให้ view แสดงผลเลย */
-        .primary-btn { background-color: #3b82f6; color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; transition: background-color 0.3s; }
-        .primary-btn:hover { background-color: #2563eb; }
-        .card { background-color: #f9fafb; border-radius: 0.75rem; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); }
+        /* 1. ใช้ Font Poppins และพื้นหลังสีฟ้าอ่อน */
+        body { 
+            font-family: "Poppins", sans-serif; 
+            background: #e7f5ff; 
+            min-height: 100vh;
+            /* ลบ display:flex ออก เพื่อให้ Dashboard แสดงผลจากด้านบนตามปกติ */
+        }
+        .app-container { 
+            max-width: 1000px; 
+            width: 95%; 
+            margin: 20px auto; 
+            background: white; 
+            border-radius: 1rem; 
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); 
+        }
+        .view { padding: 1.5rem 2rem 2.5rem; }
+        
+        /* 2. Style ปุ่ม จากหน้า Login (submit-btn) */
+        .submit-btn {
+            display: inline-block;
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            text-align: center;
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 123, 255, 0.4);
+            filter: brightness(1.1);
+        }
+        .submit-btn.secondary {
+            background: #6c757d; /* สีเทา */
+            background: linear-gradient(135deg, #868e96 0%, #495057 100%);
+        }
+        .submit-btn.secondary:hover {
+             box-shadow: 0 5px 20px rgba(73, 80, 87, 0.4);
+        }
+
+
+        /* 3. Navbar Tab */
         .tab-btn { display: inline-block; padding: 0.25rem 0.75rem; font-size: 0.875rem; border-bottom-width: 2px; border-color: transparent; }
         .tab-btn:hover { border-color: #9ca3af; }
-        
-        /* Star Rating Styles */
+        .tab-btn.active { border-color: #3b82f6; color: #3b82f6; font-weight: 700; }
+
+        /* 4. Star Rating Styles (จากโค้ดเดิมของคุณ) */
         .star-rating .star {
             cursor: pointer;
             color: #d1d5db; /* gray-300 */
@@ -28,40 +78,167 @@
         .star-rating .star.selected {
             color: #f59e0b; /* amber-500 */
         }
+
+        /* 5. Rating Modal Styles */
+        #rating-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            padding: 1rem;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 0.75rem;
+            padding: 2rem;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+        
+        /* 6. History Item Styles */
+        .history-item {
+            display: flex;
+            flex-wrap: wrap; /* สำหรับจอเล็ก */
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+        }
+        .history-details {
+            font-size: 0.95rem;
+            color: #495057;
+        }
+        .rate-btn {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #007bff;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid #007bff;
+        }
+        .rate-btn:hover {
+            background: #007bff;
+            color: white;
+        }
+        .rated-text {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #6c757d;
+        }
+        /* Style ดาวที่ให้คะแนนแล้ว */
+        .rated-stars {
+            color: #f59e0b; /* สีเหลือง */
+            font-size: 1.1rem;
+            vertical-align: middle;
+        }
+        .unrated-stars {
+            color: #d1d5db; /* สีเทา */
+            font-size: 1.1rem;
+            vertical-align: middle;
+        }
+
     </style>
 </head>
-<body>
+<!-- เพิ่ม studentId ใน body เพื่อให้ JS ดึงไปใช้ได้ -->
+<body th:data-student-id="${student.id}">
 
 <div class="app-container">
     <nav id="navbar" class="p-4 border-b border-gray-100 flex justify-between items-center rounded-t-xl bg-gray-50">
         <h1 class="text-2xl font-bold text-gray-800">Laundry Hub</h1>
         <div class="flex space-x-4 items-center">
-            <div class="space-x-2">
-                <a href="/dashboard" class="tab-btn">Dashboard</a>
-                <a href="/booking" class="tab-btn">Booking</a>
+            <div id="nav-tabs" class="space-x-2">
+                <!-- ใช้ Thymeleaf สร้าง URL แบบไดนามิก -->
+                <a id="nav-dashboard" th:href="@{/student/{id}/dashboard(id=${student.id})}" class="tab-btn active">Dashboard</a>
+                <a id="nav-booking" th:href="@{/student/{id}/booking(id=${student.id})}" class="tab-btn">Booking</a>
             </div>
-            <span id="user-info" class="text-sm text-gray-600 font-medium sm:inline">(User Name)</span>
+            <!-- ใช้ Thymeleaf แสดงชื่อ User -->
+            <span id="user-info" class="text-sm text-gray-600 font-medium sm:inline"
+                  th:text="${student.name + ' (' + student.id + ')'}">Wacharaphong (6731503032)</span>
         </div>
     </nav>
 
-    <div id="rating-view" class="view text-center">
+    <!-- ===== Student Dashboard View ===== -->
+    <div id="dashboard-view" class="view">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Upcoming Bookings</h2>
         
-        <div id="thank-you-msg" class="hidden">
-            <h2 class="text-3xl font-bold mb-4 text-emerald-600">Thank You!</h2>
-            <p class="text-lg text-gray-700 mb-8">Your feedback helps us improve our service.</p>
-            <div class="card max-w-md mx-auto p-8">
-                <svg class="w-24 h-24 text-emerald-500 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        <div id="upcoming-list" class="mb-8 space-y-4">
+            <!-- ===== Thymeleaf Loop: Upcoming ===== -->
+            <div th:each="booking : ${upcomingBookings}" class="history-item">
+                <span class="history-details">
+                    <strong th:text="${booking.machine.name}">เครื่องอบผ้า B-01</strong>
+                    | <span th:text="${booking.formattedSlot}">3 พ.ย. 2025 (18:00 - 19:00)</span>
+                    | <span class="font-bold text-blue-600">Upcoming</span>
+                </span>
             </div>
-             <a href="/dashboard" class="primary-btn mt-8">
-                Back to Dashboard
-            </a>
+            <!-- แสดงข้อความถ้าไม่มีรายการ -->
+            <div th:if="${#lists.isEmpty(upcomingBookings)}" class="text-gray-500 text-center py-4">
+                No upcoming bookings.
+            </div>
         </div>
-        
-        <form id="rating-form" class="max-w-md mx-auto">
-            <h2 class="text-3xl font-bold mb-4 text-gray-800">How was your laundry?</h2>
-            <p class="text-gray-600 mb-8">Please rate your experience with <span class="font-semibold text-blue-600" th:text="${machineName ?: 'Washer 1'}">Washer 1</span>.</p>
 
-            <div class="card">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Completed History</h2>
+        
+        <div id="history-list" class="space-y-4">
+            
+            <!-- ===== Thymeleaf Loop: Completed ===== -->
+            <div th:each="booking : ${completedHistory}" class="history-item">
+                <span class="history-details">
+                    <strong th:text="${booking.machine.name}">เครื่องซักผ้า A-05</strong>
+                    | <span th:text="${booking.formattedSlot}">3 พ.ย. 2025 (14:00 - 15:00)</span>
+                    | <span class="text-green-600">เสร็จสิ้น</span>
+                </span>
+                
+                <!-- 1. ถ้ายังไม่ให้คะแนน (rating == null) -->
+                <a th:if="${booking.rating == null}" 
+                   class="rate-btn"
+                   th:data-booking-id="${booking.id}"
+                   th:data-machine-name="${booking.machine.name}">
+                   [ให้คะแนน]
+                </a>
+                
+                <!-- 2. ถ้าให้คะแนนแล้ว (rating != null) -->
+                <span th:if="${booking.rating != null}" class="rated-text">
+                    คุณให้คะแนนแล้ว 
+                    <!-- แสดงดาวสีเหลืองตามคะแนน -->
+                    <span class="rated-stars" th:text="${#strings.repeat('★', booking.rating)}"></span>
+                    <!-- แสดงดาวสีเทาที่เหลือ (ถ้าคะแนนน้อยกว่า 5) -->
+                    <span class="unrated-stars" th:if="${booking.rating < 5}" th:text="${#strings.repeat('★', 5 - booking.rating)}"></span>
+                </span>
+            </div>
+            <!-- แสดงข้อความถ้าไม่มีประวัติ -->
+            <div th:if="${#lists.isEmpty(completedHistory)}" class="text-gray-500 text-center py-4">
+                No completed bookings found.
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- ===== Rating Modal (หน้าต่าง Pop-up) ===== -->
+<!-- (ส่วนนี้เหมือนเดิม ไม่ต้องแก้ Thymeleaf) -->
+<div id="rating-modal" class="hidden">
+    <!-- พื้นหลังสีเทา -->
+    <div class="modal-overlay absolute inset-0 bg-black opacity-60"></div>
+    
+    <!-- กล่อง Modal Content -->
+    <div class="modal-content text-center z-10">
+
+        <!-- 1. หน้าฟอร์มให้คะแนน (แสดงตอนแรก) -->
+        <form id="rating-form">
+            <h2 class="text-3xl font-bold mb-2 text-gray-800">How was your laundry?</h2>
+            <p class="text-gray-600 mb-6">Please rate your experience with <br><strong id="modal-machine-name" class="text-xl text-blue-600">...</strong></p>
+
+            <div class="card bg-gray-50 border border-gray-200 p-6">
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Your Rating</label>
                     <div class="star-rating flex justify-center space-x-2">
@@ -71,72 +248,190 @@
                         <span class="star" data-value="4">&#9733;</span>
                         <span class="star" data-value="5">&#9733;</span>
                     </div>
-                    <input type="hidden" id="rating-value" name="ratingValue" value="0" />
-                    <input type="hidden" id="machine-id" name="machineId" th:value="${machineId ?: 'W-01'}" />
+                    <!-- Input ที่ซ่อนไว้สำหรับเก็บค่า -->
+                    <input type="hidden" id="rating-value" value="0" />
+                    <input type="hidden" id="booking-id-input" />
+                    <p id="rating-error" class="text-red-500 text-sm mt-2 hidden">Please select at least one star.</p>
                 </div>
 
                 <div class="mb-6">
                     <label for="comments" class="block text-sm font-medium text-gray-700 text-left mb-2">Additional Comments (Optional)</label>
-                    <textarea id="comments" name="comments" rows="4" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="The machine was clean, the cycle was fast..."></textarea>
+                    <textarea id="comments" name="comments" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="The machine was clean, fast, etc."></textarea>
                 </div>
 
-                <button type="submit" class="w-full primary-btn">
+                <button type="submit" class="w-full submit-btn mb-3">
                     Submit Feedback
+                </button>
+                <button type="button" id="close-modal-btn" class="w-full submit-btn secondary">
+                    Cancel
                 </button>
             </div>
         </form>
+        
+        <!-- 2. หน้าขอบคุณ (ซ่อนไว้ตอนแรก) -->
+        <div id="thank-you-msg" class="hidden">
+            <svg class="w-20 h-20 text-blue-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <h2 class="text-3xl font-bold mb-2 text-blue-600">Thank You!</h2>
+            <p class="text-lg text-gray-700">Your feedback helps us improve.</p>
+        </div>
+
     </div>
 </div>
 
+
 <script>
 $(document).ready(function() {
-    // --- Star Rating Logic ---
-    let currentRating = 0;
-    const $stars = $('.star-rating .star');
 
+    // --- 1. รับ Student ID จาก <body> (ที่ Thymeleaf ใส่ไว้) ---
+    const studentId = $('body').data('student-id'); 
+
+    // (ลบ Mock Data ออก)
+    // const studentId = '6731503032'; 
+    // const studentName = 'Wacharaphong';
+
+    // (ส่วน Navbar ถูกจัดการโดย Thymeleaf แล้ว ไม่ต้องใช้ JS อัปเดต)
+    // if (studentId) {
+    //     ...
+    // }
+
+    // --- 2. ตัวแปรสำหรับ Modal และ Rating ---
+    let currentRating = 0;
+    const $modal = $('#rating-modal');
+    const $ratingForm = $('#rating-form');
+    const $thankYouMsg = $('#thank-you-msg');
+    const $stars = $modal.find('.star-rating .star'); // เลือกดาวใน Modal
+    const $ratingError = $('#rating-error');
+
+    // --- 3. Logic การเปิด/ปิด Modal ---
+
+    // เปิด Modal เมื่อคลิก [ให้คะแนน]
+    $('#history-list').on('click', '.rate-btn', function() {
+        const bookingId = $(this).data('booking-id');
+        const machineName = $(this).data('machine-name');
+
+        // 3.1 รีเซ็ตฟอร์มใน Modal
+        currentRating = 0;
+        $stars.removeClass('selected');
+        $ratingForm[0].reset(); 
+        $ratingError.addClass('hidden'); 
+        $('#rating-value').val(0);
+
+        // 3.2 ตั้งค่าข้อมูลใน Modal
+        $('#modal-machine-name').text(machineName);
+        $('#booking-id-input').val(bookingId);
+
+        // 3.3 สลับหน้าจอ (เผื่อกดอีกครั้ง)
+        $ratingForm.show();
+        $thankYouMsg.addClass('hidden');
+        
+        // 3.4 แสดง Modal
+        $modal.removeClass('hidden');
+    });
+
+    // ปิด Modal (ปุ่ม Cancel)
+    $('#close-modal-btn').on('click', function() {
+        $modal.addClass('hidden');
+    });
+
+    // ปิด Modal (คลิกพื้นหลัง)
+    $('.modal-overlay').on('click', function() {
+        $modal.addClass('hidden');
+    });
+
+
+    // --- 4. Star Rating Logic ---
     $stars.on('click', function() {
         currentRating = $(this).data('value');
-        $('#rating-value').val(currentRating); // อัปเดตค่าใน input ที่ซ่อนอยู่
+        $('#rating-value').val(currentRating);
+        $ratingError.addClass('hidden'); 
 
         $stars.each(function() {
-            if ($(this).data('value') <= currentRating) {
-                $(this).addClass('selected');
-            } else {
-                $(this).removeClass('selected');
-            }
+            $(this).toggleClass('selected', $(this).data('value') <= currentRating);
         });
     });
 
     $stars.on('mouseover', function() {
         const hoverValue = $(this).data('value');
         $stars.each(function() {
-            if ($(this).data('value') <= hoverValue) {
-                $(this).addClass('selected');
-            } else {
-                $(this).removeClass('selected');
-            }
+            $(this).toggleClass('selected', $(this).data('value') <= hoverValue);
         });
     });
 
     $stars.on('mouseout', function() {
         $stars.each(function() {
-            if ($(this).data('value') <= currentRating) {
-                $(this).addClass('selected');
-            } else {
-                $(this).removeClass('selected');
-            }
+            $(this).toggleClass('selected', $(this).data('value') <= currentRating);
         });
     });
 
-    // --- Form Submission Logic ---
-    $('#rating-form').on('submit', function(e) {
-        e.preventDefault(); // หยุดการส่งฟอร์มแบบปกติ
-
+    // --- 5. Form Submission Logic ---
+    $ratingForm.on('submit', function(e) {
+        e.preventDefault(); 
+        
         const rating = $('#rating-value').val();
         const comments = $('#comments').val();
-        const machineId = $('#machine-id').val();
+        const bookingId = $('#booking-id-input').val();
 
         if (rating == 0) {
-            alert("Please select a star rating first.");
+            $ratingError.removeClass('hidden'); 
             return;
         }
+
+        // --- (สำคัญ) การส่งข้อมูลไป Back-end ---
+        console.log("Sending feedback to server:");
+        console.log({ studentId, bookingId, rating, comments });
+        
+        // (เปิดส่วนนี้ เมื่อ Back-end พร้อม)
+        
+        fetch(`/student/${studentId}/rating`, { // ใช้ studentId ที่ดึงมา
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                bookingId: bookingId, // ควรส่ง bookingId
+                ratingValue: rating, 
+                comments: comments 
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json(); // หรือ .text() ถ้า Back-end ไม่ส่ง JSON
+        })
+        .then(data => {
+             console.log("Rating submitted!", data);
+             
+             // 5.1 แสดง "Thank You"
+             $ratingForm.hide();
+             $thankYouMsg.removeClass('hidden');
+
+             // 5.2 (สำคัญ) อัปเดตปุ่มในหน้า Dashboard
+             // หาปุ่มที่ถูกคลิกด้วย bookingId
+             const $ratedButton = $(`.rate-btn[data-booking-id="${bookingId}"]`);
+             
+             // สร้างข้อความดาว
+             const starsHtml = '<span class="rated-stars">' + '★'.repeat(rating) + '</span>' +
+                               '<span class="unrated-stars">' + (rating < 5 ? '★'.repeat(5 - rating) : '') + '</span>';
+
+             // แทนที่ปุ่ม [ให้คะแนน] ด้วยข้อความ "คุณให้คะแนนแล้ว"
+             $ratedButton.replaceWith(
+                 $('<span class="rated-text">คุณให้คะแนนแล้ว ' + starsHtml + '</span>')
+             );
+
+             // 5.3 ซ่อน Modal หลังจาก 2 วินาที
+             setTimeout(() => {
+                 $modal.addClass('hidden');
+             }, 2000);
+             
+        })
+        .catch(error => {
+            console.error('Error submitting rating:', error);
+            alert('Error submitting feedback. Please try again.'); // (ควรเปลี่ยนเป็น Modal ที่สวยงาม)
+        });
+        
+    });
+});
+</script>
+</body>
+</html>
