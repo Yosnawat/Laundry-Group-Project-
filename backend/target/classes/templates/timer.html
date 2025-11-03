@@ -118,18 +118,19 @@
             <h2 class="text-4xl font-bold text-blue-600 mb-4">Booking Confirmed!</h2>
             <p class="text-lg text-gray-600 mb-8">Your schedule is confirmed. Redirecting to dashboard...</p>
             <!-- 12. เปลี่ยน class ปุ่ม จาก primary-btn เป็น submit-btn -->
-            <a href="/student/dashboard" class="submit-btn inline-block text-center">Go to Dashboard Now</a>
+            <a id="go-to-dashboard-btn" href="#" class="submit-btn inline-block text-center">Go to Dashboard Now</a>
         </div>
     </div>
 
 </div>
 
 <script>
+    // --- ตัวแปรส่วนกลาง ---
     let paymentTimerInterval = null;
     let pendingBooking = null;
     let isExpired = false; 
 
-    // --- TIMER LOGIC ---
+    // --- LOGIC การนับเวลาถอยหลัง ---
     function startPaymentTimer() {
         // 15 minute timer (15 * 60 seconds)
         let totalSeconds = 15 * 60; 
@@ -154,7 +155,7 @@
                 $sec.text('00');
                 $('#timer-status-message').text('Booking Time Expired').addClass('text-red-400');
                 $('#timer-subtext').text('Please go back and try booking again.');
-                $('#confirm-btn').prop('disabled', true); // .css('opacity', 0.5) ถูกจัดการโดย class .submit-btn:disabled แล้ว
+                $('#confirm-btn').prop('disabled', true);
                 sessionStorage.removeItem('pendingBooking'); 
                 return;
             }
@@ -169,7 +170,7 @@
         }, 1000);
     }
 
-    // --- "Confirm" Button Logic ---
+    // --- LOGIC ปุ่ม "Confirm" ---
     $('#confirm-btn').on('click', function() {
         if (isExpired) {
             console.warn("Confirm button clicked, but timer has already expired.");
@@ -183,7 +184,7 @@
         
         // 2. ซ่อนหน้าจอ Timer
         $('#timer-active').addClass('hidden');
-        // 3. แสดงหน้าจอสำเร็จ
+        // 3. แสดงหน้าจอสำเร็จ (นี่คือส่วนที่ทำให้เห็นหน้า Booking Confirmed)
         $('#approval-success').removeClass('hidden');
         
         console.log('Booking Confirmed by User. Storing data:', pendingBooking);
@@ -191,14 +192,17 @@
         // 4. ล้างข้อมูลจองที่ค้างไว้
         sessionStorage.removeItem('pendingBooking');
         
-        // 5. Redirect ไปหน้า Dashboard
+        // 5. Redirect ไปหน้า Dashboard (ที่ถูกต้อง)
+        const studentId = pendingBooking.user; // ดึง ID
+        const dashboardUrl = `/student/${studentId}/dashboard`; // สร้าง URL
+        
         setTimeout(() => {
-             window.location.href = '/student/dashboard';
+             window.location.href = dashboardUrl; // ใช้ URL ที่ถูกต้อง
         }, 4000); 
     });
 
 
-    // --- INITIALIZATION ---
+    // --- INITIALIZATION (เมื่อหน้าเว็บโหลดเสร็จ) ---
     $(document).ready(function() {
         // 1. ดึงข้อมูลการจองจาก sessionStorage
         const bookingDataJSON = sessionStorage.getItem('pendingBooking');
@@ -212,15 +216,27 @@
         // 2. แปลงข้อมูลกลับเป็น Object
         pendingBooking = JSON.parse(bookingDataJSON);
 
-        // 3. แสดงข้อมูล User (ถ้ามี)
-        if (pendingBooking) { 
-            if (pendingBooking.user) {
-                $('#user-info').text(`${pendingBooking.user} (Student)`).show();
-            }
+        // 3. แสดงข้อมูล User และ Booking Details
+        if (pendingBooking && pendingBooking.user) { 
             
-            // (แสดงรายละเอียดเครื่องและเวลา)
+            const studentId = pendingBooking.user; // เช่น "6731503032"
+            const dashboardUrl = `/student/${studentId}/dashboard`;
+
+            // 1. อัปเดตลิงก์ของปุ่ม "Go to Dashboard Now"
+            $('#go-to-dashboard-btn').attr('href', dashboardUrl);
+            
+            // 2. แสดงชื่อ User
+            $('#user-info').text(`${pendingBooking.user} (Student)`).show();
+            
+            // 3. แสดงรายละเอียดการจอง
             $('#detail-machine').text(pendingBooking.machineName || 'N/A');
             $('#detail-slot').text(pendingBooking.slot || 'N/A');
+            
+        } else {
+             console.error("Booking data is invalid or missing user.");
+             // ควรเด้งกลับไปหน้า booking
+             window.location.href = 'booking.html'; 
+             return;
         }
 
         // 4. เริ่มจับเวลา 15 นาที
