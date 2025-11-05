@@ -76,6 +76,35 @@ public class UserService {
         }
     }
 
+    /**
+     * Authenticate with role validation.
+     * Verifies that the requested role matches the user's actual role in the database.
+     */
+    public Optional<User> authenticate(String studentId, String email, String rawPassword, String requestedRole) {
+        // First authenticate with password
+        Optional<User> authenticated = authenticate(studentId, email, rawPassword);
+        if (!authenticated.isPresent()) {
+            return Optional.empty();
+        }
+
+        // Then verify the role matches
+        User user = authenticated.get();
+        if (requestedRole == null || requestedRole.isBlank()) {
+            return Optional.empty(); // Role must be provided
+        }
+
+        try {
+            Role reqRole = Role.valueOf(requestedRole.toUpperCase());
+            if (user.getRole() != reqRole) {
+                return Optional.empty(); // Role mismatch
+            }
+        } catch (IllegalArgumentException e) {
+            return Optional.empty(); // Invalid role
+        }
+
+        return Optional.of(user);
+    }
+
     /** Return all users (used by debug endpoint). Caller must not expose passwords. */
     public List<User> findAllUsers() {
         return userRepository.findAll();

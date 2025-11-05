@@ -263,6 +263,15 @@
                 <div id="loginForm" class="form-content active">
                     <form id="loginFormElement" onsubmit="handleLogin(event)">
                         <div class="form-group">
+                            <label for="loginRole">Role</label>
+                            <select id="loginRole" name="role" required>
+                                <option value="">Select your role</option>
+                                <option value="STUDENT">Student</option>
+                                <option value="MANAGER">Manager</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
                             <label for="loginIdentifier">Student ID or Email</label>
                             <input type="text" id="loginIdentifier" name="identifier" 
                                    placeholder="Enter your student ID or email" required>
@@ -361,12 +370,14 @@
             
             const identifier = document.getElementById('loginIdentifier').value;
             const password = document.getElementById('loginPassword').value;
+            const role = document.getElementById('loginRole').value;
             const loginBtn = document.getElementById('loginBtn');
             
             // Determine if identifier is email or studentId
             const isEmail = identifier.includes('@');
             const requestBody = {
-                password: password
+                password: password,
+                role: role
             };
             
             if (isEmail) {

@@ -31,6 +31,7 @@ public class AuthController {
         public String studentId;
         public String email;
         public String password;
+        public String role; // Role selection from UI (must match actual user role)
     }
 
     public static class RegisterRequest {
@@ -53,7 +54,11 @@ public class AuthController {
             return ResponseEntity.badRequest().body(Map.of("error", "password required"));
         }
 
-        return userService.authenticate(req.studentId, req.email, req.password)
+        if (req.role == null || req.role.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "role required"));
+        }
+
+        return userService.authenticate(req.studentId, req.email, req.password, req.role)
                 .map(user -> ResponseEntity.ok(Map.of(
                         "id", user.getId(),
                         "studentId", user.getStudentId(),

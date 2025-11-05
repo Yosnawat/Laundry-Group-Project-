@@ -357,11 +357,13 @@
 
           var identifier = $("#loginIdentifier").val();
           var password = $("#loginPassword").val();
+          var role = $("#SelectRole").val();
           var $loginBtn = $("#loginBtn");
 
           var isEmail = identifier.includes("@");
           var requestBody = {
             password: password,
+            role: role,
           };
 
           if (isEmail) {
