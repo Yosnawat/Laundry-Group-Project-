@@ -1,6 +1,8 @@
 package model;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -33,8 +35,8 @@ public class Booking {
     @Column(nullable = false)
     private LocalDateTime bookingDate;
 
-    // --- เพิ่มฟิลด์ใหม่: เวลาหมดอายุของการรออนุมัติ 15 นาที ---
-    @Column(nullable = true) // อนุญาตให้เป็น null ได้ ถ้าสถานะไม่ใช่ PENDING
+    // --- (This field is fine) ---
+    @Column(nullable = true) // Allow null if status is not PENDING
     private LocalDateTime confirmationExpiryTime;
     // --------------------------------------------------------
 
@@ -51,12 +53,17 @@ public class Booking {
     @Column(nullable = false)
     private LocalDateTime updatedAt;
 
+    // --- (NEW) FIELD ADDED TO FIX RATING PAGE ERROR ---
+    @Column(name = "rating", nullable = true)
+    private Integer rating;
+    // --------------------------------------------------
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         if (status == null) {
-            status = BookingStatus.PENDING; // สถานะเริ่มต้นคือ PENDING [cite: 1029]
+            status = BookingStatus.PENDING;
         }
     }
 
@@ -65,7 +72,7 @@ public class Booking {
         updatedAt = LocalDateTime.now();
     }
 
-    // --- Getters and Setters (ส่วนที่เพิ่ม/ปรับปรุง) ---
+    // --- Getters and Setters ---
 
     public Long getId() {
         return id;
@@ -99,7 +106,6 @@ public class Booking {
         this.bookingDate = bookingDate;
     }
 
-    // --- Getter/Setter สำหรับฟิลด์ใหม่ ---
     public LocalDateTime getConfirmationExpiryTime() {
         return confirmationExpiryTime;
     }
@@ -107,7 +113,6 @@ public class Booking {
     public void setConfirmationExpiryTime(LocalDateTime confirmationExpiryTime) {
         this.confirmationExpiryTime = confirmationExpiryTime;
     }
-    // ------------------------------------
 
     public BookingStatus getStatus() {
         return status;
@@ -149,7 +154,17 @@ public class Booking {
         this.updatedAt = updatedAt;
     }
 
-    // Helper methods (เดิม)
+    // --- (NEW) GETTER/SETTER FOR RATING ---
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+    // --------------------------------------
+
+    // Helper methods
     public String getCustomerName() {
         return user != null ? user.getName() : "Unknown";
     }
@@ -158,5 +173,19 @@ public class Booking {
             return user.getName().substring(0, 1).toUpperCase();
         }
         return "?";
+    }
+    
+    public String getFormattedSlot() {
+        if (this.bookingDate == null) {
+            return "N/A";
+        }
+        
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
+        String datePart = this.bookingDate.format(dateFormatter);
+        
+        String startTime = this.bookingDate.format(DateTimeFormatter.ofPattern("HH:mm"));
+        String endTime = this.bookingDate.plusHours(1).format(DateTimeFormatter.ofPattern("HH:mm"));
+
+        return String.format("%s (%s - %s)", datePart, startTime, endTime);
     }
 }

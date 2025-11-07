@@ -1,15 +1,18 @@
 package controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable; // <-- IMPORT THIS
+import org.springframework.web.bind.annotation.PathVariable; // Import this
 
+import model.Booking; // Import this
 import model.BookingStatus;
-import model.User; // <-- IMPORT THIS
+import model.User; 
 import service.BookingService;
-import service.UserService; // <-- IMPORT THIS
+import service.UserService; 
 
 @Controller
 public class ViewController {
@@ -18,7 +21,7 @@ public class ViewController {
     private BookingService bookingService;
     
     @Autowired
-    private UserService userService; // <-- ADD THIS
+    private UserService userService; 
 
     @GetMapping("/")
     public String home() {
@@ -32,7 +35,6 @@ public class ViewController {
 
     @GetMapping("/booking")
     public String booking(Model model) {
-        // (This is your old method, it's fine)
         model.addAttribute("bookings", bookingService.getAllBookings());
         model.addAttribute("totalBookings", bookingService.getTotalBookings());
         model.addAttribute("confirmedBookings", bookingService.getBookingCountByStatus(BookingStatus.CONFIRMED));
@@ -42,9 +44,9 @@ public class ViewController {
     }
 
     /*
-     * THIS IS THE NEW METHOD THAT FIXES YOUR PROBLEM.
-     * It matches the link from dashboard.html, finds the user,
-     * and serves the booking.html page.
+     * This is your original, working method.
+     * I have added model.addAttribute("student", currentUser)
+     * to ensure it also works if your 'rating.html' is a copy of 'dashboard.html'.
      */
     @GetMapping("/student/{studentId}/booking")
     public String studentBooking(@PathVariable String studentId, Model model) {
@@ -55,22 +57,41 @@ public class ViewController {
             return "redirect:/login?error=UserNotFound";
         }
         
-        // Add the current user to the model so booking.html knows who they are
+        // Add the current user to the model
         model.addAttribute("currentUser", currentUser);
+        model.addAttribute("student", currentUser); // Add this for compatibility
         
-        // (You can add any other data the booking page needs here)
+        // (You must add machine data here for the booking page to work)
         // e.g., model.addAttribute("machines", machineService.getAllMachines());
         
         return "booking"; // This tells Spring to render "booking.html"
     }
 
-    @GetMapping("/rating")
-    public String rating(Model model) {
+    // --- (THIS IS THE FIX for the rating page) ---
+    @GetMapping("/student/{studentId}/rating")
+    public String showStudentRatingPage(@PathVariable String studentId, Model model) {
+        
+        User currentUser = userService.findByStudentId(studentId);
+        if (currentUser == null) {
+            return "redirect:/login?error=UserNotFound";
+        }
+
+        // This line fixes your "student.id" error
+        model.addAttribute("student", currentUser);
+
+        // Your rating.html page (copied from dashboard) needs this data
+        List<Booking> upcoming = bookingService.findUpcomingBookingsByUserId(currentUser.getId()); 
+        List<Booking> completed = bookingService.getCompletedBookingsForRating(currentUser.getId());
+
+        model.addAttribute("upcomingBookings", upcoming);
+        model.addAttribute("completedHistory", completed);
+        
+        // Render the rating.html template
         return "rating";
     }
 
     @GetMapping("/timer")
     public String timer() {
         return "timer";
-    }//
+    }
 }

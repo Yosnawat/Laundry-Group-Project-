@@ -31,7 +31,7 @@ public class Machine {
     private String description;
     
     // Machine specifications
-    private String machineType;      // e.g., "Washing Machine", "Dryer"
+    private String machineType;      // e.g., "Washing Machine"
     private String brand;            // e.g., "LG", "Samsung"
     private String model;            // e.g., "WM-3500"
     private String capacity;         // e.g., "8kg", "6L"

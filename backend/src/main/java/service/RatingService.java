@@ -72,6 +72,13 @@ public class RatingService {
         newRating.setRating(ratingValue);
         newRating.setReviewText(reviewText);
 
+        // --- (THIS IS THE FIX) ---
+        // 1. Update the booking object with the rating score
+        booking.setRating(ratingValue);
+        // 2. Save the updated booking
+        bookingRepository.save(booking);
+        // --- (END OF FIX) ---
+
         return ratingRepository.save(newRating);
     }
 

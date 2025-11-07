@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import model.Booking;
 import model.BookingStatus;
 import service.BookingService;
@@ -200,7 +202,31 @@ public class BookingController {
         try {
             Booking updatedBooking = bookingService.completeBooking(id);
             if (updatedBooking != null) {
-                return ResponseEntity.ok(updatedBooking);
+                
+                // --- (FIX) Create a safe response, just like in approveBooking ---
+                
+                // 1. Create a simple map for the user
+                Map<String, Object> userMap = new HashMap<>();
+                if (updatedBooking.getUser() != null) {
+                    userMap.put("id", updatedBooking.getUser().getId());
+                }
+
+                // 2. Create a simple map for the machine
+                Map<String, Object> machineMap = new HashMap<>();
+                if (updatedBooking.getMachine() != null) {
+                    machineMap.put("name", updatedBooking.getMachine().getName());
+                }
+                
+                // 3. Create the final response
+                Map<String, Object> response = new HashMap<>();
+                response.put("id", updatedBooking.getId());
+                response.put("status", updatedBooking.getStatus());
+                response.put("user", userMap); // Add the simple user map
+                response.put("machine", machineMap); // Add the simple machine map
+
+                return ResponseEntity.ok(response);
+                // --- (End of Fix) ---
+
             }
             return ResponseEntity.notFound().build();
         } catch (IllegalStateException e) {

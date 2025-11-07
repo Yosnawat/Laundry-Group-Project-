@@ -42,49 +42,57 @@ public class RatingController {
             Optional<Booking> bookingOpt = bookingService.getBookingById(ratingRequest.getBookingId());
             if (!bookingOpt.isPresent()) {
                 return ResponseEntity.badRequest()
-                    .body(createErrorResponse("Booking not found", "BOOKING_NOT_FOUND"));
+                        .body(createErrorResponse("Booking not found", "BOOKING_NOT_FOUND"));
             }
 
             Booking booking = bookingOpt.get();
             if (booking.getStatus() != BookingStatus.COMPLETED) {
                 return ResponseEntity.badRequest()
-                    .body(createErrorResponse("Can only rate completed bookings", "BOOKING_NOT_COMPLETED"));
+                        .body(createErrorResponse("Can only rate completed bookings", "BOOKING_NOT_COMPLETED"));
             }
 
             // Check if user owns the booking
             if (!booking.getUser().getId().equals(ratingRequest.getUserId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(createErrorResponse("Cannot rate other user's booking", "UNAUTHORIZED"));
+                        .body(createErrorResponse("Cannot rate other user's booking", "UNAUTHORIZED"));
             }
 
             // Check if already rated
             if (ratingService.isBookingRated(ratingRequest.getBookingId())) {
                 return ResponseEntity.badRequest()
-                    .body(createErrorResponse("Booking already rated", "ALREADY_RATED"));
+                        .body(createErrorResponse("Booking already rated", "ALREADY_RATED"));
             }
 
             // Validate rating value
             if (ratingRequest.getRating() < 1 || ratingRequest.getRating() > 5) {
                 return ResponseEntity.badRequest()
-                    .body(createErrorResponse("Rating must be between 1 and 5", "INVALID_RATING"));
+                        .body(createErrorResponse("Rating must be between 1 and 5", "INVALID_RATING"));
             }
 
             // Submit the rating
             Rating savedRating = ratingService.submitRating(
-                ratingRequest.getBookingId(),
-                ratingRequest.getUserId(),
-                ratingRequest.getRating(),
-                ratingRequest.getReviewText()
+                    ratingRequest.getBookingId(),
+                    ratingRequest.getUserId(),
+                    ratingRequest.getRating(),
+                    ratingRequest.getReviewText()
             );
 
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedRating);
+            // --- (THIS IS THE FIX) ---
+            // DO NOT return savedRating, it causes an infinite JSON loop.
+            // Return a simple, safe map instead.
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", savedRating.getId());
+            response.put("message", "Rating submitted successfully");
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            // --- (END OF FIX) ---
 
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest()
-                .body(createErrorResponse(e.getMessage(), "VALIDATION_ERROR"));
+                    .body(createErrorResponse(e.getMessage(), "VALIDATION_ERROR"));
         } catch (Exception e) {
+            e.printStackTrace(); // Log the full error
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(createErrorResponse("Internal server error", "SERVER_ERROR"));
+                    .body(createErrorResponse("Internal server error", "SERVER_ERROR"));
         }
     }
 
@@ -137,10 +145,10 @@ public class RatingController {
                 return ResponseEntity.ok(rating.get());
             }
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(createErrorResponse("No rating found for this booking", "RATING_NOT_FOUND"));
+                    .body(createErrorResponse("No rating found for this booking", "RATING_NOT_FOUND"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(createErrorResponse("Error retrieving rating: " + e.getMessage(), "SERVER_ERROR"));
+                    .body(createErrorResponse("Error retrieving rating: " + e.getMessage(), "SERVER_ERROR"));
         }
     }
     
@@ -215,5 +223,5 @@ public class RatingController {
 
         public Map<Integer, Long> getRatingDistribution() { return ratingDistribution; }
         public void setRatingDistribution(Map<Integer, Long> ratingDistribution) { this.ratingDistribution = ratingDistribution; }
-    }//
+    }
 }

@@ -141,8 +141,8 @@
     
     let pendingBooking = null; 
     let bookingId = null; 
-    let studentId = null; 
-    let studentDashboardUrl = "/"; 
+    let studentId = null; // This will be set to the *correct* Student ID (e.g., "6731503032")
+    let studentDashboardUrl = "/"; // Default
 
     let timer15MinInterval = null;
     let timer60MinInterval = null;
@@ -155,29 +155,24 @@
         $(`#${viewName}`).removeClass('hidden');
     }
 
-    // --- (1. Logic การนับถอยหลัง 15 นาที - แก้ไขให้รับค่าเริ่มต้น) ---
+    // --- (1. Logic 15 min timer) ---
     function startPendingTimer(initialSeconds) {
-        // ถ้าไม่ได้ส่งค่ามา (undefined) ให้ใช้ 15 นาที (900 วิ)
         let totalSeconds = (initialSeconds !== undefined) ? initialSeconds : 15 * 60;
         const $min = $('#timer-min-15');
         const $sec = $('#timer-sec-15');
-
         if (timer15MinInterval) clearInterval(timer15MinInterval);
 
         timer15MinInterval = setInterval(() => {
-            if (totalSeconds <= 0) { // เปลี่ยนจาก < 0 เป็น <= 0 เพื่อความแม่นยำ
+            if (totalSeconds <= 0) { 
                 clearInterval(timer15MinInterval);
                 if (statusPollingInterval) clearInterval(statusPollingInterval);
-                
                 showView('final-view');
                 $('#final-title').text('Booking Expired');
                 $('#final-subtitle').text('Your booking was not approved in time. Redirecting...');
-                
                 sessionStorage.removeItem('pendingBooking');
                 setTimeout(() => { window.location.href = studentDashboardUrl; }, 3000);
                 return;
             }
-            
             const minutes = Math.floor(totalSeconds / 60);
             const seconds = totalSeconds % 60;
             $min.text(String(minutes).padStart(2, '0'));
@@ -186,13 +181,11 @@
         }, 1000);
     }
 
-    // --- (2. Logic การนับถอยหลัง 60 นาที - แก้ไขให้รับค่าเริ่มต้น) ---
+    // --- (2. Logic 60 min timer) ---
     function startUsageTimer(initialSeconds) {
-        // ถ้าไม่ได้ส่งค่ามา ให้ใช้ 60 นาที (3600 วิ)
         let totalSeconds = (initialSeconds !== undefined) ? initialSeconds : 60 * 60;
         const $min = $('#timer-min-60');
         const $sec = $('#timer-sec-60');
-
         if (timer60MinInterval) clearInterval(timer60MinInterval);
 
         timer60MinInterval = setInterval(() => {
@@ -202,7 +195,6 @@
                 handleFinishBooking(); 
                 return;
             }
-            
             const minutes = Math.floor(totalSeconds / 60);
             const seconds = totalSeconds % 60;
             $min.text(String(minutes).padStart(2, '0'));
@@ -211,33 +203,23 @@
         }, 1000);
     }
 
-    // --- (3. Logic การ Polling ถามสถานะ - แก้ไขให้รับเวลาจาก Server) ---
+    // --- (3. Logic Polling) ---
     function startStatusPolling(bId) {
         if (statusPollingInterval) clearInterval(statusPollingInterval);
-
         statusPollingInterval = setInterval(() => {
-            // console.log("Polling status...");
             $.ajax({
                 type: "GET",
                 url: `/api/bookings/${bId}/status`,
                 dataType: "json",
                 success: function(response) {
                     if (response.status === 'IN_PROGRESS') {
-                        // !!!! Manager อนุมัติแล้ว !!!!
                         console.log("Status changed to IN_PROGRESS!");
                         clearInterval(statusPollingInterval); 
                         clearInterval(timer15MinInterval); 
-
                         showView('in-progress-view');
-                        // เริ่มนับ 60 นาที โดยใช้เวลาที่เหลือจริงจาก Server
                         startUsageTimer(response.remainingSeconds); 
-
-                    } else if (response.status === 'PENDING') {
-                        // ยัง PENDING อยู่... 
-                        // (Optional: คุณอาจจะอยากซิงค์เวลา 15 นาทีให้ตรงกับ Server ทุกครั้งที่ Poll ก็ได้
-                        // แต่ถ้านับถอยหลังใน JS ก็พอไหวอยู่ครับ เพื่อความเนียน)
-                    } else {
-                        // Cancelled / Completed
+                    } else if (response.status !== 'PENDING') {
+                        // Cancelled / Completed / etc.
                         clearInterval(statusPollingInterval);
                         clearInterval(timer15MinInterval);
                         sessionStorage.removeItem('pendingBooking');
@@ -250,7 +232,7 @@
         }, 5000); 
     }
 
-    // --- (4. Logic ปุ่ม "Finish" - เหมือนเดิม) ---
+    // --- (4. Logic "Finish" Button) ---
     function handleFinishBooking() {
         if (!bookingId) return;
         if (timer60MinInterval) clearInterval(timer60MinInterval);
@@ -262,26 +244,25 @@
             dataType: "json",
             beforeSend: function(xhr) { if (csrfHeader && csrfToken) xhr.setRequestHeader(csrfHeader, csrfToken); },
             success: function(response) {
-                // ล้างข้อมูลเดิม
                 sessionStorage.removeItem('pendingBooking');
                 
-                // เตรียมข้อมูลสำหรับหน้า Rating (แบบง่าย)
+                // Prepare data for rating page
                 const ratingInfo = {
                     bookingId: response.id,
-                    // ดึง ID นักเรียนเพื่อส่งไปพร้อมกับคะแนน
-                    userId: (response.user && response.user.id) ? response.user.id : studentId,
+                    // Use the globally set, correct studentId
+                    userId: (response.user && response.user.id) ? response.user.id : null, 
                     machineName: (response.machine && response.machine.name) ? response.machine.name : "Machine"
                 };
                 sessionStorage.setItem('ratingInfo', JSON.stringify(ratingInfo));
 
-                // --- ย้ายไปหน้า Rating ทันที ---
-                window.location.href = '/rating'; 
+                // --- (THIS IS THE FIXED LINE) ---
+                // It now uses the correct studentId (e.g., "6731503032")
+                window.location.href = `/student/${studentId}/rating`; 
             },
             error: function(xhr) {
                 let errorMsg = xhr.responseJSON ? (xhr.responseJSON.message || xhr.responseJSON.error) : 'Failed to complete.';
                 alert(errorMsg);
-                // ถ้า error ให้กลับ dashboard
-                window.location.href = studentDashboardUrl;
+                window.location.href = studentDashboardUrl; // Go to dashboard on error
             }
         });
     }
@@ -291,39 +272,58 @@
         handleFinishBooking();
     });
 
-    // --- (5. INITIALIZATION - แก้ไขให้ใช้เวลาจาก Server ตอนโหลดหน้า) ---
-    $(document).ready(function() {
-        const bookingDataJSON = sessionStorage.getItem('pendingBooking');
-        if (!bookingDataJSON) {
-             // (เหมือนเดิม: ลองหา activeBooking เผื่อมี)
-             // ...
-             window.location.href = '/login'; return;
-        }
-        pendingBooking = JSON.parse(bookingDataJSON);
-        if (pendingBooking.id) { bookingId = pendingBooking.id; } 
-        else { window.location.href = '/login'; return; }
+    // --- (This function holds all the logic that runs AFTER we have booking data) ---
+    function initializePage(bookingData) {
+        pendingBooking = bookingData;
 
-        // ... (การตั้งค่า studentId, URL, และ Text ต่างๆ เหมือนเดิม) ...
-        if (pendingBooking.user && pendingBooking.user.studentId) {
-             studentId = pendingBooking.user.studentId;
-        } else if (pendingBooking.userId) { 
-             studentId = String(pendingBooking.userId);
-        } else {
-             studentId = "default";
+        if (pendingBooking.id) { 
+            bookingId = pendingBooking.id; 
+        } else { 
+            console.error("No booking ID found.");
+            window.location.href = '/login'; 
+            return; 
         }
-        if (studentId.includes("{")) { try { studentId = pendingBooking.user.studentId; } catch(e) { studentId = "error"; } }
+
+        // --- (THIS IS THE FIXED LOGIC) ---
+        // We ONLY accept pendingBooking.studentId (from booking.html)
+        // or booking.user.studentId (from the API fallback)
+        if (pendingBooking.studentId) {
+            studentId = pendingBooking.studentId;
+        } else if (pendingBooking.user && pendingBooking.user.studentId) {
+            studentId = pendingBooking.user.studentId;
+        } else {
+            // If we don't have a studentId, we cannot continue.
+            console.error("Critical Error: Booking data is missing a studentId.", pendingBooking);
+            alert("An error occurred. Booking data is corrupt. Please log in again.");
+            window.location.href = '/login';
+            return; // Stop execution
+        }
+        // --- (END OF FIX) ---
 
         studentDashboardUrl = `/student/${studentId}/dashboard`;
         $('#nav-dashboard-link').attr('href', studentDashboardUrl);
         $('#nav-booking-link').attr('href', '/student/' + studentId + '/booking');
         $('#user-info').text(`${studentId} (Student)`).show();
-        $('#detail-machine').text(pendingBooking.machineName || (pendingBooking.machine ? pendingBooking.machine.name : 'N/A'));
-        // จัดรูปแบบเวลาให้สวยงามขึ้นเล็กน้อย ถ้าทำได้
-        let slotShow = pendingBooking.slot || (pendingBooking.bookingDate ? pendingBooking.bookingDate.replace('T', ' ') : 'N/A');
-        $('#detail-slot').text(slotShow);
         $('#go-to-dashboard-btn').attr('href', studentDashboardUrl);
 
-        // --- เรียก API ครั้งแรก เพื่อดูสถานะและ "เวลาที่เหลือจริง" ---
+        // Setup booking details
+        let machineName = "N/A";
+        if (pendingBooking.machineName) {
+            machineName = pendingBooking.machineName;
+        } else if (pendingBooking.machine && pendingBooking.machine.name) {
+            machineName = pendingBooking.machine.name;
+        }
+        $('#detail-machine').text(machineName);
+        
+        let slotShow = "N/A";
+        if(pendingBooking.slot) {
+            slotShow = pendingBooking.slot;
+        } else if (pendingBooking.bookingDate) {
+            slotShow = pendingBooking.bookingDate.replace('T', ' ');
+        }
+        $('#detail-slot').text(slotShow);
+
+        // --- Check status and start the correct timer ---
         $.ajax({
             type: "GET",
             url: `/api/bookings/${bookingId}/status`,
@@ -331,17 +331,16 @@
             success: function(response) {
                 if (response.status === 'PENDING') {
                     showView('pending-view');
-                    // เริ่มนับ 15 นาที โดยใช้เวลาที่เหลือจริงจาก Server
                     startPendingTimer(response.remainingSeconds); 
                     startStatusPolling(bookingId);
                 } else if (response.status === 'IN_PROGRESS') {
                     showView('in-progress-view');
-                    // เริ่มนับ 60 นาที โดยใช้เวลาที่เหลือจริงจาก Server
                     startUsageTimer(response.remainingSeconds); 
                 } else {
+                    // Booking is CANCELLED or COMPLETED
                     showView('final-view');
                     $('#final-title').text('Booking Not Active');
-                    $('#final-subtitle').text('Redirecting...');
+                    $('#final-subtitle').text('This booking is already completed or cancelled. Redirecting...');
                     sessionStorage.removeItem('pendingBooking');
                     setTimeout(() => { window.location.href = studentDashboardUrl; }, 3000);
                 }
@@ -351,6 +350,46 @@
                 window.location.href = studentDashboardUrl;
             }
         });
+    }
+
+    // --- (5. INITIALIZATION - REBUILT) ---
+    $(document).ready(function() {
+        const bookingDataJSON = sessionStorage.getItem('pendingBooking');
+
+        if (bookingDataJSON) {
+            // HAPPY PATH: Data is in sessionStorage (e.g., coming from booking.html)
+            console.log("Found booking in sessionStorage.");
+            initializePage(JSON.parse(bookingDataJSON));
+        } else {
+            // FALLBACK: Data not in session. Ask the server for it.
+            console.log("No booking in sessionStorage. Fetching from server...");
+            $.ajax({
+                type: "GET",
+                url: "/api/bookings/my-active-booking", // The new endpoint
+                dataType: "json",
+                success: function(activeBooking) {
+                    // Server responded with 200 OK and data
+                    console.log("Found active booking on server:", activeBooking);
+                    // Save it to sessionStorage for consistency
+                    sessionStorage.setItem('pendingBooking', JSON.stringify(activeBooking));
+                    initializePage(activeBooking);
+                },
+                error: function(xhr) {
+                    // API failed or returned no content (204)
+                    if (xhr.status === 204) {
+                        console.log("Server found no active booking.");
+                        alert("No active booking found. Redirecting to dashboard.");
+                        // Go to a known "safe" page. We can't know the studentId
+                        // so we can't build the dashboard URL. /login is safer.
+                        window.location.href = '/login'; 
+                    } else {
+                        console.error("Error fetching active booking:", xhr.responseText);
+                        alert("You are not logged in or an error occurred.");
+                        window.location.href = '/login';
+                    }
+                }
+            });
+        }
     });
 </script>
 

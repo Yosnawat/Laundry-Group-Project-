@@ -96,21 +96,18 @@
             border-color: #3b82f6;
             color: #2563eb;
         }
-        /* --- CSS ส าหรับช่องที่ถูกจอง --- */
+        /* --- CSS for taken slots --- */
         .slot-button-taken {
-            background-color: #f3f4f6;
-            /* gray-100 */
-            border: 1px solid #e5e7eb;
-            /* gray-200 */
-            color: #9ca3af;
-            /* gray-400 */
+            background-color: #f3f4f6; /* gray-100 */
+            border: 1px solid #e5e7eb; /* gray-200 */
+            color: #9ca3af; /* gray-400 */
             padding: 0.5rem;
             border-radius: 0.375rem;
             font-weight: 500;
             font-size: 0.875rem;
             text-align: center;
             cursor: not-allowed;
-            text-decoration: line-through; /* ขีดฆ่า */
+            text-decoration: line-through; /* Strikethrough */
         }
     </style>
 </head>
@@ -204,6 +201,7 @@
 <script th:inline="javascript">
     const currentUserName = /*[[${currentUser.name}]]*/ "User";
     const currentUserId = /*[[${currentUser.id}]]*/ null;
+    const currentStudentId = /*[[${currentUser.studentId}]]*/ null; // <-- THIS IS THE FIX
 </script>
 
 <script>
@@ -272,7 +270,7 @@
         });
     }
 
-    // --- RENDER MACHINES AND SLOTS (ฟังก์ชันที่แก้ไขใหม่จาก PDF) ---
+    // --- RENDER MACHINES AND SLOTS ---
     function renderMachineSlots() {
         const $list = $("#machine-list").empty().html('<p>Loading available machines and schedule...</p>');
         const todayStr = getTodaysDateString();
@@ -284,7 +282,6 @@
             
             const bookingLookup = new Set();
             bookings.forEach(booking => {
-                // (เรา JOIN FETCH มาแล้ว ข้อมูล machine.id จึงพร้อมใช้งาน)
                 if (booking.machine) {
                     const key = `${booking.machine.id}-${booking.bookingDate}`;
                     bookingLookup.add(key);
@@ -306,14 +303,14 @@
                     const isTaken = bookingLookup.has(lookupKey);
                     
                     if (isTaken) {
-                        // --- (แสดงปุ่มที่ "เต็มแล้ว") ---
+                        // --- Show "Taken" button ---
                         slotButtonsHTML += `
                             <button class="slot-button-taken" disabled>
                                 ${slotTime}
                             </button>
                         `;
                     } else {
-                        // --- (แสดงปุ่มที่ "ว่าง") ---
+                        // --- Show "Available" button ---
                         slotButtonsHTML += `
                             <button class="slot-button" 
                                 data-machine-id="${machine.id}"
@@ -340,8 +337,7 @@
         });
     }
 
-
-    // --- (ส่วน Logic การจอง) ---
+    // --- Booking Logic ---
 
     // 1. Handle click on a time slot button
     $("#machine-list").on("click", ".slot-button", function () {
@@ -352,9 +348,10 @@
         const startHour = parseInt(startTime.split(":")[0]);
         const endTime = `${String(startHour + 1).padStart(2, "0")}:00`;
 
-        // (นี่คือ Local Object ที่เราสร้าง)
+        // (This is the local object we build)
         pendingBooking = {
             userId: currentUserId,
+            studentId: currentStudentId, // <-- THIS IS THE FIX
             machineId: machineId,
             machineName: machineName,
             user: currentUserName,
@@ -377,7 +374,6 @@
     });
 
     // 3. Handle Submit button -> Call the API
-    // --- (นี่คือส่วนที่แก้ไข) ---
     $("#submit-booking-btn").on("click", function () {
         if (!pendingBooking) return;
 
@@ -388,7 +384,7 @@
             user: { id: currentUserId }, 
             machine: { id: pendingBooking.machineId }, 
             bookingDate: bookingDateTime, 
-            amount: 50.0, // (คุณอาจจะตั้งค่าราคานี้)
+            amount: 50.0, // (Default price)
             service: "WASH"
         };
 
@@ -399,17 +395,17 @@
             data: JSON.stringify(bookingData),
             dataType: "json",
             success: function(response) {
-                // (Success! 'response' คือ Booking Object ที่ Server สร้าง)
+                // (Success! 'response' is the Booking Object from the server)
                 showMessage("Booking submitted! Redirecting...", "success");
 
-                // (1. เอารายละเอียดจาก Server (ที่มี ID) มารวมกับรายละเอียดในหน้า (ที่มี slot))
+                // (1. Combine details from the server (like ID) with details from the page (like slot))
                 const dataForTimer = { ...pendingBooking, ...response };
 
-                // (2. เก็บ Object ที่รวมแล้ว ไปให้ timer.html ใช้)
+                // (2. Save the combined object for timer.html to use)
                 sessionStorage.setItem("pendingBooking", JSON.stringify(dataForTimer));
                 
                 setTimeout(() => {
-                    window.location.href = "/timer"; // (ย้ายไปหน้า Timer)
+                    window.location.href = "/timer"; // (Go to timer page)
                 }, 1500);
             },
             error: function(xhr) {
@@ -421,7 +417,7 @@
                 
                 setTimeout(() => {
                     showView("booking-view");
-                    // (ส าคัญ) โหลดตารางเวลาใหม่
+                    // (Important) Reload the schedule
                     renderMachineSlots();
                 }, 2000);
             }
@@ -437,7 +433,7 @@
             console.warn("User ID is null, but name is present.");
         }
         
-        // เริ่มโหลดเครื่องและตารางเวลาทันที
+        // Load machines and schedule immediately
         renderMachineSlots();
     });
 </script>
