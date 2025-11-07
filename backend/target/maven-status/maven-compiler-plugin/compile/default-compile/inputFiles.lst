@@ -10,6 +10,7 @@
 /workspaces/Laundry-Group-Project-/backend/src/main/java/AuthController.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/model/BookingStatus.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/util/Validator.java
+/workspaces/Laundry-Group-Project-/backend/src/main/java/controller/MachineSummaryDTO.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/repo/RatingRepository.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/service/MachineService.java
 /workspaces/Laundry-Group-Project-/backend/src/main/java/service/UserService.java

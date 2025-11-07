@@ -1,6 +1,7 @@
 package controller;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import model.Machine;
+import repo.RatingRepository;
 import service.MachineManagementService;
 import util.Validator;
 
@@ -32,6 +34,9 @@ public class MachineController {
     @Autowired
     private MachineManagementService machineManagementService;
 
+    @Autowired
+    private RatingRepository ratingRepository;
+
     // ===== USER ENDPOINTS (View machines) =====
 
     @GetMapping("/available")
@@ -41,7 +46,31 @@ public class MachineController {
         return ResponseEntity.ok(machineManagementService.getFunctionalMachines());
     }
 
-    @GetMapping("/{machineId}/detail")
+    @GetMapping("/summary")
+    public ResponseEntity<List<MachineSummaryDTO>> getMachinesSummary() {
+        List<Machine> machines = machineManagementService.getFunctionalMachines();
+        List<MachineSummaryDTO> summaries = machines.stream()
+            .map(machine -> {
+                Double avgRating = ratingRepository.getAverageRatingByMachineId(machine.getId());
+                Long totalRatings = ratingRepository.countByMachineId(machine.getId());
+                
+                return new MachineSummaryDTO(
+                    machine.getId(),
+                    machine.getName(),
+                    machine.getMachineNumber(),
+                    machine.getMachineType(),
+                    machine.getLocation(),
+                    machine.getStatus(),
+                    machine.getPricePerHour(),
+                    machine.getPricePerDay(),
+                    avgRating != null ? avgRating : 0.0,
+                    totalRatings != null ? totalRatings : 0L
+                );
+            })
+            .collect(Collectors.toList());
+        
+        return ResponseEntity.ok(summaries);
+    }
     public ResponseEntity<MachineDetailDTO> getMachineDetail(@PathVariable Long machineId) {
         Validator.validateId(machineId, "Machine ID");
         return ResponseEntity.ok(machineManagementService.getMachineDetail(machineId));

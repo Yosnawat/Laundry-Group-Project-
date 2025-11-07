@@ -8,10 +8,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable; // Import this
 
+import controller.MachineDetailDTO;
 import model.Booking; // Import this
 import model.BookingStatus;
 import model.User; 
 import service.BookingService;
+import service.MachineManagementService;
 import service.UserService; 
 
 @Controller
@@ -21,7 +23,10 @@ public class ViewController {
     private BookingService bookingService;
     
     @Autowired
-    private UserService userService; 
+    private UserService userService;
+
+    @Autowired
+    private MachineManagementService machineManagementService; 
 
     @GetMapping("/")
     public String home() {
@@ -93,5 +98,26 @@ public class ViewController {
     @GetMapping("/timer")
     public String timer() {
         return "timer";
+    }
+
+    @GetMapping("/machine/{machineId}")
+    public String showMachinePage(@PathVariable Long machineId, Model model) {
+        try {
+            // Get machine detail with all ratings and reviews
+            MachineDetailDTO machineDetail = machineManagementService.getMachineDetail(machineId);
+            
+            // Add individual attributes that machine.html expects
+            model.addAttribute("machine", machineDetail);
+            model.addAttribute("averageRating", machineDetail.getAverageRating());
+            model.addAttribute("totalRatings", machineDetail.getTotalRatings());
+            model.addAttribute("recentReviews", machineDetail.getReviews());
+            
+            return "machine";
+        } catch (IllegalArgumentException e) {
+            return "redirect:/";
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:/";
+        }
     }
 }

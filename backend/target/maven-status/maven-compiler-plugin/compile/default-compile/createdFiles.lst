@@ -3,6 +3,7 @@ controller/DashboardController.class
 controller/RatingController$RatingRequest.class
 App.class
 service/MachineService.class
+controller/MachineSummaryDTO.class
 service/MachineManagementService.class
 controller/AuthController.class
 config/SecurityConfig.class
