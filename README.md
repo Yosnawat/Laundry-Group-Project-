@@ -1,4 +1,15 @@
 TO DO:
+FIX THIS 
+<img width="640" height="547" alt="image" src="https://github.com/user-attachments/assets/22b6d746-9a30-46f2-8ca1-3a139eb16a90" />
+
+<img width="1300" height="315" alt="image" src="https://github.com/user-attachments/assets/cc89781d-a4a6-4c61-a481-9eaca3fe4e37" />
+
+
+
+
+
+
+
 FIX THE RATING PAGE
 INTEGRATE THE MACHINE PAGE TO BE LINKED TO EACH MACHINE WHEN CLICK ON 
 ALSO ADD THE RATING BESIDE THE MACHINE NAME
@@ -24,6 +35,7 @@ SYSTEM INTERACTION BETWEEN MANAGER,REGISTER USER AND BOOK MACHINE!
 
  Add Exception handling/Validation/Api
 ```
+
 
 
 
