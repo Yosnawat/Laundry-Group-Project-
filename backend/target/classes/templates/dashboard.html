@@ -421,11 +421,11 @@
                                 <div class="text-xs text-gray-600 mb-2 truncate">${userName}</div>
                                 <div class="flex justify-center space-x-1">
                                     <button class="mini-action-btn bg-green-500 hover:bg-green-600 btn-approve-booking" 
-                                            data-booking-id="${booking.id}" title="ตกลง">
+                                            data-booking-id="${booking.id}" title="confirm">
                                         ✓ ตกลง
                                     </button>
                                     <button class="mini-action-btn bg-red-500 hover:bg-red-600 btn-reject-booking" 
-                                            data-booking-id="${booking.id}" title="ยกเลิก">
+                                            data-booking-id="${booking.id}" title="cancle">
                                         ✕ ยกเลิก
                                     </button>
                                 </div>
@@ -545,7 +545,7 @@
         const machineId = $btn.data('machine-id');
         const slotTime = $btn.data('slot-time');
 
-        if (!confirm("ต้องการปิดกั้นช่วงเวลานี้ใช่ไหม?")) return;
+        if (!confirm("Block this slot?")) return;
         $btn.text('...').prop('disabled', true);
 
         const bookingData = {
