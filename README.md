@@ -3,7 +3,7 @@ PLEASE REFERENCE TO **LaundryManagementSystem.pdf** DONT JUST PUT EVERYTHING IN 
 -
 
 SRS document: https://mfuacth-my.sharepoint.com/:w:/g/personal/6731503032_lamduan_mfu_ac_th/EXVy3TEnZflPvp_BWjoEX9MBISLqiwNg3KYqRwCXWIWZWg?e=61WvaJ
-REFERENCE FOR FUNCTIONAL REQUIREMENTTS AND STUFFS IS GIVEN IN PDF FILE
+REFERENCE FOR FUNCTIONAL REQUIREMENTTS AND STUFFS IS GIVEN IN PDF FILE SOMEONE DO 5. THAT ONLY REMAINS
 
 
 Testcase: https://docs.google.com/document/d/19IPBqxg8vo9AKMhmAK6XzaB3JnzYQ7Isb255os5MSUA/edit?usp=sharing
@@ -64,6 +64,7 @@ SYSTEM INTERACTION BETWEEN MANAGER,REGISTER USER AND BOOK MACHINE!
 
  Add Exception handling/Validation/Api
 ```
+
 
 
 
