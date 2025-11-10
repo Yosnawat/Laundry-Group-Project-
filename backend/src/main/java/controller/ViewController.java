@@ -85,7 +85,7 @@ public class ViewController {
         model.addAttribute("student", currentUser);
 
         // Your rating.html page (copied from dashboard) needs this data
-        List<Booking> upcoming = bookingService.findUpcomingBookingsByUserId(currentUser.getId()); 
+        List<Booking> upcoming = bookingService.getBookingsByUserId(currentUser.getId()); 
         List<Booking> completed = bookingService.getCompletedBookingsForRating(currentUser.getId());
 
         model.addAttribute("upcomingBookings", upcoming);

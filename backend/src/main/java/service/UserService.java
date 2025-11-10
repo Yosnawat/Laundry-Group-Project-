@@ -11,11 +11,13 @@ import model.User;
 import repo.UserRepository;
 
 /**
- * Service that handles user registration and authentication.
- *
+ * Service that handles user registration, authentication, and lookup.
+ * 
  * Responsibilities:
- * - register(User): validate uniqueness then hash password and save
- * - authenticate(...): find user by studentId or email and verify password
+ * - User registration with password hashing (BCrypt)
+ * - Authentication by student ID or email with password verification
+ * - Role-based authentication validation
+ * - User lookup operations
  */
 @Service
 public class UserService {
@@ -28,7 +30,17 @@ public class UserService {
     }
 
     /**
-     * Register a new user..
+     * Registers a new user in the system.
+     * 
+     * Workflow:
+     * 1. Validates student ID uniqueness
+     * 2. Validates email uniqueness
+     * 3. Hashes password using BCrypt
+     * 4. Saves user to database
+     * 
+     * @param user User object with studentId, email, password, and role
+     * @return Created user entity
+     * @throws IllegalArgumentException if student ID or email already exists
      */
     public User register(User user) {
         if (user.getStudentId() != null && userRepository.existsByStudentId(user.getStudentId())) {
@@ -42,12 +54,20 @@ public class UserService {
     }
 
     /**
-     * Authenticate a user by studentId OR email and a raw (plain) password.
-     * Behavior:
-     * - tries to find a user by studentId first, then by email
-     * - if stored password looks like a BCrypt hash (prefix $2a$/$2b$/$2y$) uses PasswordEncoder.matches
-     * - otherwise falls back to plain-text comparison (kept for legacy compatibility)
-     * Returns Optional.of(user) on success or Optional.empty() on failure.
+     * Authenticates a user by student ID or email with password verification.
+     * Supports both BCrypt hashed passwords and legacy plain-text passwords.
+     * 
+     * Workflow:
+     * 1. Validates at least one identifier (studentId or email) is provided
+     * 2. Searches for user by studentId first
+     * 3. Falls back to email search if student ID not found
+     * 4. Verifies password using BCrypt if stored password is hashed (starts with $2a$/$2b$/$2y$)
+     * 5. Falls back to plain-text comparison for legacy compatibility
+     * 
+     * @param studentId Student ID to search for (optional)
+     * @param email Email to search for (optional)
+     * @param rawPassword Plain-text password to verify
+     * @return Optional containing user if authentication successful
      */
     public Optional<User> authenticate(String studentId, String email, String rawPassword) {
         if ((studentId == null || studentId.isBlank()) && (email == null || email.isBlank())) {
@@ -77,8 +97,22 @@ public class UserService {
     }
 
     /**
-     * Authenticate with role validation.
-     * Verifies that the requested role matches the user's actual role in the database.
+     * Authenticates a user with role validation.
+     * First authenticates with password, then verifies the user's role matches the requested role.
+     * 
+     * Workflow:
+     * 1. Performs password authentication using authenticate() method
+     * 2. Returns empty if password authentication fails
+     * 3. Validates requested role is not null or blank
+     * 4. Converts requested role string to Role enum
+     * 5. Compares user's actual role with requested role
+     * 6. Returns user only if roles match exactly
+     * 
+     * @param studentId Student ID to search for (optional)
+     * @param email Email to search for (optional)
+     * @param rawPassword Plain-text password to verify
+     * @param requestedRole Role the user claims to have (STUDENT or MANAGER)
+     * @return Optional containing user if both authentication and role validation succeed
      */
     public Optional<User> authenticate(String studentId, String email, String rawPassword, String requestedRole) {
         // First authenticate with password
@@ -105,28 +139,33 @@ public class UserService {
         return Optional.of(user);
     }
 
-    /** Return all users (used by debug endpoint). Caller must not expose passwords. */
+    /**
+     * Retrieves all users in the system.
+     * Warning: Caller must not expose password hashes in API responses.
+     * 
+     * @return List of all users
+     */
     public List<User> findAllUsers() {
         return userRepository.findAll();
     }
 
-    /** Find user by studentId */
+    /**
+     * Finds a user by their student ID.
+     * 
+     * @param studentId Student ID to search for
+     * @return User entity if found, null otherwise
+     */
     public User findByStudentId(String studentId) {
         return userRepository.findByStudentId(studentId);
     }
 
-    /** Find user by email */
+    /**
+     * Finds a user by their email address.
+     * 
+     * @param email Email to search for
+     * @return User entity if found, null otherwise
+     */
     public User findByEmail(String email) {
         return userRepository.findByEmail(email);
-    }
-
-    /** Find users by role */
-    public List<User> findByRole(Role role) {
-        return userRepository.findByRole(role);
-    }
-
-    /** Find user by ID */
-    public Optional<User> findById(Long id) {
-        return userRepository.findById(id);
     }
 }

@@ -23,6 +23,10 @@ import model.Rating;
 import service.BookingService;
 import service.RatingService;
 
+/**
+ * REST controller for machine rating and review management.
+ * Handles rating submission, retrieval, statistics, and validation.
+ */
 @RestController
 @RequestMapping("/api/ratings")
 @CrossOrigin(origins = "*", maxAge = 3600)
@@ -34,7 +38,20 @@ public class RatingController {
     @Autowired
     private BookingService bookingService;
 
-    // Submit a rating and review for a completed booking
+    /**
+     * Submits a rating and review for a completed booking.
+     * 
+     * Workflow:
+     * 1. Validates booking exists and is completed
+     * 2. Verifies user owns the booking
+     * 3. Checks booking hasn't been rated already
+     * 4. Validates rating value (1-5)
+     * 5. Calls RatingService to save rating
+     * 6. Returns safe response (prevents JSON infinite loop)
+     * 
+     * @param ratingRequest RatingRequest containing bookingId, userId, rating, reviewText
+     * @return ResponseEntity with rating ID or error message
+     */
     @PostMapping
     public ResponseEntity<?> submitRating(@RequestBody RatingRequest ratingRequest) {
         try {
@@ -96,35 +113,62 @@ public class RatingController {
         }
     }
 
-    // Get all ratings for a specific machine
+    /**
+     * Retrieves all ratings for a specific machine.
+     * 
+     * @param machineId Machine ID to get ratings for
+     * @return ResponseEntity with list of ratings
+     */
     @GetMapping("/machine/{machineId}")
     public ResponseEntity<List<Rating>> getRatingsByMachine(@PathVariable Long machineId) {
         List<Rating> ratings = ratingService.getRatingsByMachine(machineId);
         return ResponseEntity.ok(ratings);
     }
 
-    // Get all ratings by a specific user
+    /**
+     * Retrieves all ratings submitted by a specific user.
+     * 
+     * @param userId User ID to get ratings for
+     * @return ResponseEntity with list of user's ratings
+     */
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Rating>> getRatingsByUser(@PathVariable Long userId) {
         List<Rating> ratings = ratingService.getRatingsByUser(userId);
         return ResponseEntity.ok(ratings);
     }
 
-    // Get rating statistics for a machine
+    /**
+     * Retrieves rating statistics for a specific machine.
+     * Returns average rating, total rating count, and distribution (1-5 stars).
+     * 
+     * @param machineId Machine ID to get statistics for
+     * @return ResponseEntity with MachineRatingStats
+     */
     @GetMapping("/machine/{machineId}/stats")
     public ResponseEntity<MachineRatingStats> getMachineRatingStats(@PathVariable Long machineId) {
         MachineRatingStats stats = ratingService.getMachineRatingStats(machineId);
         return ResponseEntity.ok(stats);
     }
 
-    // Get all ratings (for admin purposes)
+    /**
+     * Retrieves all ratings in the system (admin endpoint).
+     * 
+     * @return ResponseEntity with list of all ratings
+     */
     @GetMapping
     public ResponseEntity<List<Rating>> getAllRatings() {
         List<Rating> ratings = ratingService.getAllRatings();
         return ResponseEntity.ok(ratings);
     }
 
-    // Check if a booking can be rated
+    /**
+     * Checks if a user can rate a specific booking.
+     * Validates booking is completed, user owns it, and it hasn't been rated.
+     * 
+     * @param bookingId Booking ID to check
+     * @param userId User ID making the request
+     * @return ResponseEntity with canRate boolean
+     */
     @GetMapping("/booking/{bookingId}/can-rate")
     public ResponseEntity<Map<String, Boolean>> canRateBooking(
             @PathVariable Long bookingId,
@@ -136,7 +180,12 @@ public class RatingController {
         return ResponseEntity.ok(response);
     }
 
-    // Get rating for a specific booking
+    /**
+     * Retrieves the rating for a specific booking.
+     * 
+     * @param bookingId Booking ID to get rating for
+     * @return ResponseEntity with rating or 404 if not found
+     */
     @GetMapping("/booking/{bookingId}")
     public ResponseEntity<?> getRatingByBooking(@PathVariable Long bookingId) {
         try {
@@ -152,7 +201,13 @@ public class RatingController {
         }
     }
     
-    // Get ratings with reviews for a specific machine
+    /**
+     * Retrieves ratings with review text for a specific machine.
+     * Only returns ratings that have non-empty review text.
+     * 
+     * @param machineId Machine ID to get reviews for
+     * @return ResponseEntity with list of ratings with reviews
+     */
     @GetMapping("/machine/{machineId}/reviews")
     public ResponseEntity<List<Rating>> getRatingsWithReviews(@PathVariable Long machineId) {
         try {
@@ -163,7 +218,12 @@ public class RatingController {
         }
     }
     
-    // Get recent ratings across the system
+    /**
+     * Retrieves the most recent ratings across all machines.
+     * Useful for displaying recent activity or feedback on dashboard.
+     * 
+     * @return ResponseEntity with list of recent ratings
+     */
     @GetMapping("/recent")
     public ResponseEntity<List<Rating>> getRecentRatings() {
         try {
@@ -174,7 +234,13 @@ public class RatingController {
         }
     }
 
-    // Helper method to create error response
+    /**
+     * Helper method to create standardized error responses.
+     * 
+     * @param message Error message to display
+     * @param code Error code for client handling
+     * @return Map containing error and code fields
+     */
     private Map<String, String> createErrorResponse(String message, String code) {
         Map<String, String> error = new HashMap<>();
         error.put("error", message);
@@ -182,46 +248,113 @@ public class RatingController {
         return error;
     }
 
-    // Inner classes for request/response DTOs
+    /**
+     * DTO for rating submission requests.
+     */
     public static class RatingRequest {
         private Long bookingId;
         private Long userId;
         private Integer rating;
         private String reviewText;
 
-        // Getters and setters
+        /**
+         * Gets booking ID.
+         * @return Booking ID
+         */
         public Long getBookingId() { return bookingId; }
+        /**
+         * Sets booking ID.
+         * @param bookingId Booking ID to set
+         */
         public void setBookingId(Long bookingId) { this.bookingId = bookingId; }
 
+        /**
+         * Gets user ID.
+         * @return User ID
+         */
         public Long getUserId() { return userId; }
+        /**
+         * Sets user ID.
+         * @param userId User ID to set
+         */
         public void setUserId(Long userId) { this.userId = userId; }
 
+        /**
+         * Gets rating value.
+         * @return Rating value (1-5)
+         */
         public Integer getRating() { return rating; }
+        /**
+         * Sets rating value.
+         * @param rating Rating value to set
+         */
         public void setRating(Integer rating) { this.rating = rating; }
 
+        /**
+         * Gets review text.
+         * @return Review text
+         */
         public String getReviewText() { return reviewText; }
+        /**
+         * Sets review text.
+         * @param reviewText Review text to set
+         */
         public void setReviewText(String reviewText) { this.reviewText = reviewText; }
     }
 
+    /**
+     * DTO for machine rating statistics.
+     * Contains average rating, total count, and distribution by star rating.
+     */
     public static class MachineRatingStats {
         private Double averageRating;
         private Long totalRatings;
         private Map<Integer, Long> ratingDistribution;
 
+        /**
+         * Constructs MachineRatingStats with all fields.
+         * 
+         * @param averageRating Average rating value
+         * @param totalRatings Total number of ratings
+         * @param ratingDistribution Map of rating value to count
+         */
         public MachineRatingStats(Double averageRating, Long totalRatings, Map<Integer, Long> ratingDistribution) {
             this.averageRating = averageRating;
             this.totalRatings = totalRatings;
             this.ratingDistribution = ratingDistribution;
         }
 
-        // Getters and setters
+        /**
+         * Gets average rating.
+         * @return Average rating
+         */
         public Double getAverageRating() { return averageRating; }
+        /**
+         * Sets average rating.
+         * @param averageRating Average rating to set
+         */
         public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }
 
+        /**
+         * Gets total ratings count.
+         * @return Total ratings count
+         */
         public Long getTotalRatings() { return totalRatings; }
+        /**
+         * Sets total ratings count.
+         * @param totalRatings Total ratings to set
+         */
         public void setTotalRatings(Long totalRatings) { this.totalRatings = totalRatings; }
 
+        /**
+         * Gets rating distribution map.
+         * @return Map of rating value (1-5) to count
+         */
         public Map<Integer, Long> getRatingDistribution() { return ratingDistribution; }
+        /**
+         * Sets rating distribution map.
+         * @param ratingDistribution Rating distribution to set
+         */
         public void setRatingDistribution(Map<Integer, Long> ratingDistribution) { this.ratingDistribution = ratingDistribution; }
     }
 }

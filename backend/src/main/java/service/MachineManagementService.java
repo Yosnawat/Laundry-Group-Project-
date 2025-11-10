@@ -21,6 +21,11 @@ import repo.MachineRepository;
 import repo.RatingRepository;
 import repo.UserRepository;
 
+/**
+ * Service for comprehensive machine management operations.
+ * Handles both user-facing queries and manager CRUD operations.
+ * Includes machine details with ratings, search functionality, and status management.
+ */
 @Service
 @Transactional
 public class MachineManagementService {
@@ -34,43 +39,51 @@ public class MachineManagementService {
     @Autowired
     private UserRepository userRepository;
 
-    // ===== USER OPERATIONS (Read Only) =====
-
     /**
-     * Get all available machines for browsing
+     * Retrieves all available machines for browsing.
+     * Uses JOIN FETCH to optimize database queries.
+     * @return List of available machines
      */
-    @Transactional(readOnly = true) // (แนะนำให้เพิ่ม)
+    @Transactional(readOnly = true)
     public List<Machine> getAvailableMachines() {
-        // --- ⬇️⬇️⬇️ นี่คือส่วนที่แก้ไข ⬇️⬇️⬇️ ---
-        // (เปลี่ยนจาก findByStatus เป็น findByStatusWithUser)
         return machineRepository.findByStatusWithUser(AppConstants.STATUS_AVAILABLE);
-        // --- ⬆️⬆️⬆️ จบส่วนที่แก้ไข ⬆️⬆️⬆️ ---
     }
 
     /**
-     * Get all machines (for admin/manager list)
+     * Retrieves all machines in the system.
+     * Used for admin/manager listings.
+     * @return List of all machines
      */
-    @Transactional(readOnly = true) // (แนะนำให้เพิ่ม)
+    @Transactional(readOnly = true)
     public List<Machine> getAllMachines() {
-        // --- ⬇️⬇️⬇️ นี่คือส่วนที่แก้ไข ⬇️⬇️⬇️ ---
-        // (เราเรียก findAll() ซึ่งเรา Override ไว้ใน Repository แล้ว)
         return machineRepository.findAll();
-        // --- ⬆️⬆️⬆️ จบส่วนที่แก้ไข ⬆️⬆️⬆️ ---
     }
 
     /**
-     * Get machine by ID
+     * Finds a machine by ID.
+     * @param machineId Machine ID
+     * @return Optional containing machine if found
      */
-    @Transactional(readOnly = true) // (แนะนำให้เพิ่ม)
+    @Transactional(readOnly = true)
     public Optional<Machine> getMachineById(Long machineId) {
         return machineRepository.findById(machineId);
     }
 
     /**
-     * Get machine details with ratings and reviews
-     * This is the main endpoint for machine detail page
+     * Retrieves comprehensive machine details including ratings and reviews.
+     * Workflow:
+     * 1. Fetches machine by ID
+     * 2. Calculates average rating and total ratings count
+     * 3. Builds rating distribution map (1-5 stars)
+     * 4. Retrieves all reviews with text
+     * 5. Constructs and returns MachineDetailDTO
+     * 
+     * This is the main method for the machine detail page.
+     * @param machineId Machine ID
+     * @return Machine details with ratings
+     * @throws IllegalArgumentException if machine not found
      */
-    @Transactional(readOnly = true) // (แนะนำให้เพิ่ม)
+    @Transactional(readOnly = true)
     public MachineDetailDTO getMachineDetail(Long machineId) {
         Machine machine = machineRepository.findById(machineId)
             .orElseThrow(() -> new IllegalArgumentException("Machine not found with ID: " + machineId));
@@ -107,44 +120,64 @@ public class MachineManagementService {
     }
 
     /**
-     * Search machines with multiple criteria
+     * Searches machines with multiple optional criteria.
+     * All parameters are optional - null values are ignored in search.
+     * @param name Machine name (partial match)
+     * @param location Machine location
+     * @param machineType Machine type
+     * @param minPrice Minimum price per hour
+     * @param maxPrice Maximum price per hour
+     * @param status Machine status
+     * @return List of machines matching criteria
      */
-    @Transactional(readOnly = true) // (แนะนำให้เพิ่ม)
+    @Transactional(readOnly = true)
     public List<Machine> searchMachines(String name, String location, String machineType,
                                         Double minPrice, Double maxPrice, String status) {
-        // (เมธอดนี้จะเรียกใช้ Query ที่เราแก้ไขแล้วใน Repository)
         return machineRepository.searchMachines(name, location, machineType, minPrice, maxPrice, status);
     }
 
     /**
-     * Get machines by location
+     * Retrieves machines at a specific location.
+     * @param location Location to filter by
+     * @return List of machines at the location
      */
-    @Transactional(readOnly = true) // (แนะนำให้เพิ่ม)
+    @Transactional(readOnly = true)
     public List<Machine> getMachinesByLocation(String location) {
         return machineRepository.findByLocation(location);
     }
 
     /**
-     * Get machines by type
+     * Retrieves machines of a specific type.
+     * @param type Machine type to filter by
+     * @return List of machines of the type
      */
-    @Transactional(readOnly = true) // (แนะนำให้เพิ่ม)
+    @Transactional(readOnly = true)
     public List<Machine> getMachinesByType(String type) {
         return machineRepository.findByMachineType(type);
     }
 
     /**
-     * Get machines in price range
-     */
-    @Transactional(readOnly = true) // (แนะนำให้เพิ่ม)
-    public List<Machine> getMachinesByPriceRange(Double minPrice, Double maxPrice) {
-        return machineRepository.findByPriceRange(minPrice, maxPrice);
-    }
-
-    // ===== MANAGER OPERATIONS (Create, Update, Delete) =====
-    // (ส่วนที่เหลือของไฟล์นี้ไม่ต้องแก้ไข)
-
-    /**
-     * Create a new machine (Manager only)
+     * Creates a new machine (Manager operation).
+     * Workflow:
+     * 1. Validates all required fields
+     * 2. Checks machine number uniqueness
+     * 3. Validates pricing is non-negative
+     * 4. Creates machine with status AVAILABLE
+     * 5. Saves to database
+     * 
+     * @param machineNumber Unique machine identifier
+     * @param name Machine name
+     * @param machineType Type of machine
+     * @param brand Machine brand
+     * @param model Machine model
+     * @param capacity Machine capacity
+     * @param location Physical location
+     * @param description Machine description
+     * @param features Special features
+     * @param pricePerHour Hourly rate
+     * @param pricePerDay Daily rate
+     * @return Created machine
+     * @throws IllegalArgumentException if validation fails
      */
     public Machine createMachine(String machineNumber, String name, String machineType,
                                  String brand, String model, String capacity,
@@ -191,7 +224,23 @@ public class MachineManagementService {
     }
 
     /**
-     * Update machine details (Manager only)
+     * Updates an existing machine's details (Manager operation).
+     * Only updates fields that are non-null and non-empty.
+     * 
+     * @param machineId Machine ID to update
+     * @param name New name (optional)
+     * @param machineType New type (optional)
+     * @param brand New brand (optional)
+     * @param model New model (optional)
+     * @param capacity New capacity (optional)
+     * @param location New location (optional)
+     * @param description New description (optional)
+     * @param features New features (optional)
+     * @param pricePerHour New hourly rate (optional)
+     * @param pricePerDay New daily rate (optional)
+     * @param status New status (optional)
+     * @return Updated machine
+     * @throws IllegalArgumentException if machine not found
      */
     public Machine updateMachine(Long machineId, String name, String machineType,
                                  String brand, String model, String capacity,
@@ -240,7 +289,13 @@ public class MachineManagementService {
     }
 
     /**
-     * Update only machine status (Manager only)
+     * Updates only the machine status (Manager operation).
+     * Automatically clears current user and usage time if status is MAINTENANCE or OUT_OF_SERVICE.
+     * 
+     * @param machineId Machine ID to update
+     * @param status New status (AVAILABLE, IN_USE, MAINTENANCE, OUT_OF_SERVICE)
+     * @return Updated machine
+     * @throws IllegalArgumentException if machine not found or status is empty
      */
     public Machine updateMachineStatus(Long machineId, String status) {
         Machine machine = machineRepository.findById(machineId)
@@ -262,7 +317,13 @@ public class MachineManagementService {
     }
 
     /**
-     * Update only pricing information (Manager only)
+     * Updates only the machine pricing (Manager operation).
+     * 
+     * @param machineId Machine ID to update
+     * @param pricePerHour New hourly rate (optional, must be non-negative)
+     * @param pricePerDay New daily rate (optional, must be non-negative)
+     * @return Updated machine
+     * @throws IllegalArgumentException if machine not found
      */
     public Machine updateMachinePricing(Long machineId, Double pricePerHour, Double pricePerDay) {
         Machine machine = machineRepository.findById(machineId)
@@ -279,7 +340,15 @@ public class MachineManagementService {
     }
 
     /**
-     * Delete a machine (Manager only)
+     * Deletes a machine from the system (Manager operation).
+     * 
+     * Workflow:
+     * 1. Finds machine by ID
+     * 2. Throws exception if not found
+     * 3. Permanently removes from database
+     * 
+     * @param machineId Machine ID to delete
+     * @throws IllegalArgumentException if machine not found
      */
     public void deleteMachine(Long machineId) {
         Machine machine = machineRepository.findById(machineId)
@@ -289,7 +358,20 @@ public class MachineManagementService {
     }
 
     /**
-     * Assign machine to user (for booking/usage)
+     * Assigns a machine to a user and starts usage tracking.
+     * Used when a booking is approved or when a user starts using a machine.
+     * 
+     * Workflow:
+     * 1. Finds machine by ID
+     * 2. Finds user by ID
+     * 3. Sets machine status to IN_USE
+     * 4. Links user as current user
+     * 5. Records usage start time
+     * 
+     * @param machineId Machine ID to assign
+     * @param userId User ID to assign to
+     * @return Updated machine with assignment
+     * @throws IllegalArgumentException if machine or user not found
      */
     public Machine assignMachine(Long machineId, Long userId) {
         Machine machine = machineRepository.findById(machineId)
@@ -306,7 +388,19 @@ public class MachineManagementService {
     }
 
     /**
-     * Release machine (when user finishes)
+     * Releases a machine from user and stops usage tracking.
+     * Used when a booking is completed or when a user finishes using a machine.
+     * 
+     * Workflow:
+     * 1. Finds machine by ID
+     * 2. Sets machine status to AVAILABLE
+     * 3. Clears current user link
+     * 4. Clears usage start time
+     * 5. Saves changes to database
+     * 
+     * @param machineId Machine ID to release
+     * @return Updated machine after release
+     * @throws IllegalArgumentException if machine not found
      */
     public Machine releaseMachine(Long machineId) {
         Machine machine = machineRepository.findById(machineId)
@@ -320,25 +414,13 @@ public class MachineManagementService {
     }
 
     /**
-     * Get machines in use
+     * Retrieves all functional machines (non-maintenance machines).
+     * Returns machines with status: AVAILABLE or IN_USE (excludes MAINTENANCE and OUT_OF_SERVICE).
+     * 
+     * @return List of functional machines
      */
-    @Transactional(readOnly = true) // (แนะนำให้เพิ่ม)
-    public List<Machine> getInUseMachines() {
-        return machineRepository.findByStatusWithUser(AppConstants.STATUS_IN_USE);
-    }
-
-    /**
-     * Get machines by current user
-     */
-    @Transactional(readOnly = true) // (แนะนำให้เพิ่ม)
-    public List<Machine> getMachinesByCurrentUser(Long userId) {
-        return machineRepository.findByCurrentUserId(userId);
-    }
-
     @Transactional(readOnly = true)
     public List<Machine> getFunctionalMachines() {
         return machineRepository.findAllFunctionalMachines();
     }
-
-    
 }

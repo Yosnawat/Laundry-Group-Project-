@@ -37,12 +37,8 @@ public class MachineController {
     @Autowired
     private RatingRepository ratingRepository;
 
-    // ===== USER ENDPOINTS (View machines) =====
-
     @GetMapping("/available")
     public ResponseEntity<List<Machine>> getAvailableMachines() {
-        // (เดิม) return ResponseEntity.ok(machineManagementService.getAvailableMachines());
-        // (ใหม่) เรียกใช้ getFunctionalMachines() แทน เพื่อให้โชว์เครื่องที่ IN_USE ด้วย
         return ResponseEntity.ok(machineManagementService.getFunctionalMachines());
     }
 
@@ -71,6 +67,8 @@ public class MachineController {
         
         return ResponseEntity.ok(summaries);
     }
+
+    @GetMapping("/{machineId}/detail")
     public ResponseEntity<MachineDetailDTO> getMachineDetail(@PathVariable Long machineId) {
         Validator.validateId(machineId, "Machine ID");
         return ResponseEntity.ok(machineManagementService.getMachineDetail(machineId));
@@ -112,8 +110,6 @@ public class MachineController {
         Validator.validateNotEmpty(type, "Machine Type");
         return ResponseEntity.ok(machineManagementService.getMachinesByType(type));
     }
-
-    // ===== MANAGER ENDPOINTS (Create, Update, Delete) =====
 
     @PostMapping
     public ResponseEntity<Machine> createMachine(@RequestBody CreateMachineRequest request) {
@@ -182,8 +178,6 @@ public class MachineController {
         return ResponseEntity.noContent().build();
     }
 
-    // ===== VALIDATION HELPERS =====
-
     private void validateCreateRequest(CreateMachineRequest request) {
         Validator.validateNotEmpty(request.getMachineNumber(), "Machine number");
         Validator.validateNotEmpty(request.getName(), "Machine name");
@@ -191,8 +185,6 @@ public class MachineController {
         Validator.validatePrice(request.getPricePerHour(), "Price per hour");
         Validator.validatePrice(request.getPricePerDay(), "Price per day");
     }
-
-    // ===== REQUEST DTOs =====
 
     public static class CreateMachineRequest {
         private String machineNumber;
@@ -207,7 +199,6 @@ public class MachineController {
         private Double pricePerHour;
         private Double pricePerDay;
 
-        // Getters and Setters
         public String getMachineNumber() { return machineNumber; }
         public void setMachineNumber(String machineNumber) { this.machineNumber = machineNumber; }
         public String getName() { return name; }
@@ -245,7 +236,6 @@ public class MachineController {
         private Double pricePerDay;
         private String status;
 
-        // Getters and Setters
         public String getName() { return name; }
         public void setName(String name) { this.name = name; }
         public String getMachineType() { return machineType; }

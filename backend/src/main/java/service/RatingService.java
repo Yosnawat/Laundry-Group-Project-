@@ -20,6 +20,11 @@ import repo.MachineRepository;
 import repo.RatingRepository;
 import repo.UserRepository;
 
+/**
+ * Service for managing machine ratings and reviews.
+ * Handles rating submission, validation, statistics, and retrieval operations.
+ * Ensures users can only rate their own completed bookings once.
+ */
 @Service
 public class RatingService {
     
@@ -35,6 +40,25 @@ public class RatingService {
     @Autowired
     private MachineRepository machineRepository;
 
+    /**
+     * Submits a new rating for a completed booking.
+     * Updates the booking record with the rating score.
+     * 
+     * Workflow:
+     * 1. Validates booking exists and is completed
+     * 2. Verifies user owns the booking
+     * 3. Checks booking hasn't been rated already
+     * 4. Creates rating entity with score and review text
+     * 5. Updates booking record with rating score
+     * 6. Saves rating and updated booking to database
+     * 
+     * @param bookingId Booking ID to rate
+     * @param userId User ID submitting the rating
+     * @param ratingValue Rating score (1-5 stars)
+     * @param reviewText Optional review text
+     * @return Created rating entity
+     * @throws IllegalStateException if booking not found, not completed, not owned by user, or already rated
+     */
     @Transactional
     public Rating submitRating(Long bookingId, Long userId, Integer ratingValue, String reviewText) {
         // Validate booking exists and is completed
@@ -82,26 +106,69 @@ public class RatingService {
         return ratingRepository.save(newRating);
     }
 
+    /**
+     * Checks if a booking has already been rated.
+     * 
+     * @param bookingId Booking ID to check
+     * @return true if rated, false otherwise
+     */
     public boolean isBookingRated(Long bookingId) {
         return ratingRepository.existsByBookingId(bookingId);
     }
 
+    /**
+     * Retrieves all ratings for a specific machine.
+     * 
+     * @param machineId Machine ID to get ratings for
+     * @return List of ratings for the machine
+     */
     public List<Rating> getRatingsByMachine(Long machineId) {
         return ratingRepository.findByMachineId(machineId);
     }
 
+    /**
+     * Retrieves all ratings submitted by a specific user.
+     * 
+     * @param userId User ID to get ratings for
+     * @return List of ratings by the user
+     */
     public List<Rating> getRatingsByUser(Long userId) {
         return ratingRepository.findByUserId(userId);
     }
 
+    /**
+     * Retrieves the rating for a specific booking.
+     * 
+     * @param bookingId Booking ID to get rating for
+     * @return Optional containing rating if exists
+     */
     public Optional<Rating> getRatingByBooking(Long bookingId) {
         return ratingRepository.findByBookingId(bookingId);
     }
 
+    /**
+     * Retrieves all ratings in the system.
+     * 
+     * @return List of all ratings
+     */
     public List<Rating> getAllRatings() {
         return ratingRepository.findAll();
     }
 
+    /**
+     * Calculates rating statistics for a specific machine.
+     * 
+     * Workflow:
+     * 1. Queries average rating from database
+     * 2. Counts total number of ratings
+     * 3. Retrieves rating distribution (how many 1-star, 2-star, etc.)
+     * 4. Initializes distribution map with 0 counts for all ratings (1-5)
+     * 5. Fills in actual counts from database
+     * 6. Constructs and returns MachineRatingStats object
+     * 
+     * @param machineId Machine ID to get statistics for
+     * @return MachineRatingStats containing average, total, and distribution
+     */
     public MachineRatingStats getMachineRatingStats(Long machineId) {
         Double averageRating = ratingRepository.getAverageRatingByMachineId(machineId);
         Long totalRatings = ratingRepository.countByMachineId(machineId);
@@ -129,6 +196,19 @@ public class RatingService {
         );
     }
 
+    /**
+     * Validates if a user can rate a specific booking.
+     * 
+     * Checks:
+     * 1. Booking exists in database
+     * 2. Booking status is COMPLETED
+     * 3. User owns the booking
+     * 4. Booking has not been rated yet
+     * 
+     * @param bookingId Booking ID to validate
+     * @param userId User ID to validate
+     * @return true if all conditions met, false otherwise
+     */
     public boolean canRateBooking(Long bookingId, Long userId) {
         // Check if booking exists
         Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
@@ -152,10 +232,23 @@ public class RatingService {
         return !ratingRepository.existsByBookingId(bookingId);
     }
 
+    /**
+     * Retrieves ratings with review text for a specific machine.
+     * Only returns ratings that have non-empty review text.
+     * 
+     * @param machineId Machine ID to get reviews for
+     * @return List of ratings with reviews
+     */
     public List<Rating> getRatingsWithReviews(Long machineId) {
         return ratingRepository.findByMachineIdWithReviews(machineId);
     }
 
+    /**
+     * Retrieves the most recent ratings across all machines.
+     * Useful for displaying recent activity or feedback.
+     * 
+     * @return List of recent ratings ordered by creation time
+     */
     public List<Rating> getRecentRatings() {
         return ratingRepository.findRecentRatings();
     }

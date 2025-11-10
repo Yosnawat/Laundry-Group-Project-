@@ -32,7 +32,6 @@ public class BookingController {
     @Autowired
     private BookingService bookingService;
 
-    // (ส่วนนี้เหมือนเดิม)
     @GetMapping("/date-range")
     public ResponseEntity<List<Booking>> getBookingsByDateRange(
             @RequestParam String startDate,
@@ -48,7 +47,6 @@ public class BookingController {
         }
     }
 
-    // (เมธอดอื่นๆ ... getAllBookings, getBookingById, ฯลฯ.... เหมือนเดิม)
     @GetMapping
     public ResponseEntity<List<Booking>> getAllBookings() {
         List<Booking> bookings = bookingService.getAllBookings();
@@ -123,43 +121,23 @@ public class BookingController {
         return ResponseEntity.notFound().build();
     }
 
-    // --- (นี่คือส่วนที่แก้ไข) ---
-    // เปลี่ยนจาก @PostMapping เป็น @PutMapping
-   @PostMapping("/{id}/approve")
+    @PostMapping("/{id}/approve")
     public ResponseEntity<?> approveBooking(@PathVariable Long id) {
-        System.out.println("🔥 MANAGER กำลังกดอนุมัติ Booking ID: " + id);
-
         try {
             Booking updatedBooking = bookingService.approveBooking(id);
-            System.out.println("✅ อนุมัติสำเร็จใน DB! สถานะใหม่คือ: " + updatedBooking.getStatus());
-
-            if (updatedBooking != null) {
-                // --- ⬇️ แก้ไขตรงนี้ ⬇️ ---
-                // แทนที่จะส่ง updatedBooking กลับไปทั้งก้อน (ซึ่งทำให้เกิด Error)
-                // เราสร้าง Map ส่งกลับไปเฉพาะข้อมูลที่จำเป็นพอ
-                Map<String, Object> response = new HashMap<>();
-                response.put("id", updatedBooking.getId());
-                response.put("status", updatedBooking.getStatus());
-                response.put("message", "Approve Success");
-                
-                return ResponseEntity.ok(response);
-                // --- ⬆️ จบส่วนที่แก้ไข ⬆️ ---
-            }
-            return ResponseEntity.notFound().build();
-            
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", updatedBooking.getId());
+            response.put("status", updatedBooking.getStatus());
+            response.put("message", "Approve Success");
+            return ResponseEntity.ok(response);
         } catch (IllegalStateException e) {
-            System.out.println("❌ เกิดข้อผิดพลาด (IllegalState): " + e.getMessage());
-            // e.printStackTrace(); // เอาออกได้ถ้าไม่อยากรก Console
-
-            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage(),
-                    "INVALID_STATUS"));
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage(), "INVALID_STATUS"));
         } catch (Exception e) {
-             System.out.println("❌❌ ERROR ไม่คาดคิด: " + e.getMessage());
-             e.printStackTrace();
-             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-    // --- (ส่วนนี้เหมือนเดิม) ---
+
     @GetMapping("/{id}/status")
     public ResponseEntity<?> getBookingStatus(@PathVariable Long id) {
         Optional<Booking> bookingOpt = bookingService.getBookingById(id);
@@ -168,30 +146,22 @@ public class BookingController {
             Map<String, Object> response = new HashMap<>();
             response.put("status", booking.getStatus().name());
 
-            // คำนวณเวลาที่เหลือ (หน่วย: วินาที)
             long remainingSeconds = 0;
             LocalDateTime now = LocalDateTime.now();
 
             if (booking.getStatus() == BookingStatus.PENDING) {
-                // ถ้า PENDING: เวลาที่เหลือ = 15 นาที - เวลาที่ผ่านไปแล้วตั้งแต่กดจอง
                 long elapsedSeconds = java.time.Duration.between(booking.getCreatedAt(), now).getSeconds();
                 remainingSeconds = (15 * 60) - elapsedSeconds;
-
             } else if (booking.getStatus() == BookingStatus.IN_PROGRESS) {
-                // ถ้า IN_PROGRESS: เวลาที่เหลือ = 60 นาที - เวลาที่ผ่านไปแล้วตั้งแต่เริ่มใช้งาน
                 if (booking.getMachine() != null && booking.getMachine().getUsageStartTime() != null) {
-                    long elapsedSeconds = java.time.Duration.between(booking.getMachine().getUsageStartTime(), now)
-                            .getSeconds();
+                    long elapsedSeconds = java.time.Duration.between(booking.getMachine().getUsageStartTime(), now).getSeconds();
                     remainingSeconds = (60 * 60) - elapsedSeconds;
                 } else {
-                    // กรณี Error ไม่เจอเวลาเริ่ม ให้ Default ไปก่อน
                     remainingSeconds = 60 * 60;
                 }
             }
 
-            // ถ้าเวลาติดลบ (หมดเวลาแล้ว) ให้เป็น 0
             response.put("remainingSeconds", Math.max(0, remainingSeconds));
-
             return ResponseEntity.ok(response);
         }
         return ResponseEntity.notFound().build();
@@ -201,41 +171,27 @@ public class BookingController {
     public ResponseEntity<?> completeBooking(@PathVariable Long id) {
         try {
             Booking updatedBooking = bookingService.completeBooking(id);
-            if (updatedBooking != null) {
-                
-                // --- (FIX) Create a safe response, just like in approveBooking ---
-                
-                // 1. Create a simple map for the user
-                Map<String, Object> userMap = new HashMap<>();
-                if (updatedBooking.getUser() != null) {
-                    userMap.put("id", updatedBooking.getUser().getId());
-                }
-
-                // 2. Create a simple map for the machine
-                Map<String, Object> machineMap = new HashMap<>();
-                if (updatedBooking.getMachine() != null) {
-                    machineMap.put("name", updatedBooking.getMachine().getName());
-                }
-                
-                // 3. Create the final response
-                Map<String, Object> response = new HashMap<>();
-                response.put("id", updatedBooking.getId());
-                response.put("status", updatedBooking.getStatus());
-                response.put("user", userMap); // Add the simple user map
-                response.put("machine", machineMap); // Add the simple machine map
-
-                return ResponseEntity.ok(response);
-                // --- (End of Fix) ---
-
+            Map<String, Object> userMap = new HashMap<>();
+            if (updatedBooking.getUser() != null) {
+                userMap.put("id", updatedBooking.getUser().getId());
             }
-            return ResponseEntity.notFound().build();
+
+            Map<String, Object> machineMap = new HashMap<>();
+            if (updatedBooking.getMachine() != null) {
+                machineMap.put("name", updatedBooking.getMachine().getName());
+            }
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", updatedBooking.getId());
+            response.put("status", updatedBooking.getStatus());
+            response.put("user", userMap);
+            response.put("machine", machineMap);
+            return ResponseEntity.ok(response);
         } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage(),
-                    "INVALID_STATUS"));
+            return ResponseEntity.badRequest().body(createErrorResponse(e.getMessage(), "INVALID_STATUS"));
         }
     }
 
-    // (ส่วนที่เหลือของไฟล์)
     @GetMapping("/user/{userId}/completed")
     public ResponseEntity<List<Booking>> getCompletedBookingsForRating(@PathVariable Long userId) {
         List<Booking> bookings = bookingService.getCompletedBookingsForRating(userId);
