@@ -1,8 +1,14 @@
-FROM node:alpine
+# --- Build Stage ---
+FROM maven:3.8.5-openjdk-17-slim AS build
+WORKDIR /home/app
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# --- Run Stage ---
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-COPY package*.json ./
-RUN npm install
-COPY . .
-RUN npm run build
-EXPOSE 3000
-CMD ["npm", "start"]
+COPY --from=build /home/app/target/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
