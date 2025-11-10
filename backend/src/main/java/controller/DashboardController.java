@@ -55,7 +55,7 @@ public class DashboardController {
         // We now check the 'statusName' string from the BookingStatus entity,
         // instead of comparing with the old enum value.
         Optional<Booking> activeBookingOpt = allStudentBookings.stream()
-                .filter(b -> b.getStatus() != null && "IN_PROGRESS".equals(b.getStatus().getStatusName()))
+                .filter(b -> b.getStatus() != null && "IN_PROGRESS".equals(b.getStatus().getName()))
                 .findFirst();
         // --- (END OF MODIFICATION) ---
         
@@ -64,7 +64,7 @@ public class DashboardController {
         // --- (MODIFIED) ---
         // We check the 'statusName' string here as well.
         List<Booking> upcomingBookings = allStudentBookings.stream()
-                .filter(b -> b.getStatus() == null || !"IN_PROGRESS".equals(b.getStatus().getStatusName()))
+                .filter(b -> b.getStatus() == null || !"IN_PROGRESS".equals(b.getStatus().getName()))
                 .collect(Collectors.toList());
         // --- (END OF MODIFICATION) ---
         

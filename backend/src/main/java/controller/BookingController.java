@@ -21,8 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import model.Booking;
-import model.BookingStatus; // This import is still correct (now imports the entity)
-import service.BookingService;
+import service.BookingService; // This import is still correct (now imports the entity)
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -138,7 +137,7 @@ public class BookingController {
             // --- (MODIFIED) ---
             // getStatus() now returns the BookingStatus ENTITY.
             // We get its name (e.g., "CONFIRMED") to put in the response.
-            response.put("status", updatedBooking.getStatus().getStatusName());
+            response.put("status", updatedBooking.getStatus().getName());
             // --- (END OF MODIFICATION) ---
             response.put("message", "Approve Success");
             return ResponseEntity.ok(response);
@@ -157,11 +156,7 @@ public class BookingController {
             Booking booking = bookingOpt.get();
             Map<String, Object> response = new HashMap<>();
             
-            // --- (MODIFIED) ---
-            // getStatus() returns the entity, getStatusName() returns the string "PENDING", etc.
-            // .name() no longer exists.
-            response.put("status", booking.getStatus().getStatusName());
-            // --- (END OF MODIFICATION) ---
+            response.put("status", booking.getStatus().getName());
 
             long remainingSeconds = 0;
             LocalDateTime now = LocalDateTime.now();
@@ -169,10 +164,10 @@ public class BookingController {
             // --- (MODIFIED) ---
             // We can't compare the entity (booking.getStatus()) to an enum (BookingStatus.PENDING).
             // We must compare the status name string.
-            if (booking.getStatus().getStatusName().equals("PENDING")) {
+            if (booking.getStatus().getName().equals("PENDING")) {
                 long elapsedSeconds = java.time.Duration.between(booking.getCreatedAt(), now).getSeconds();
                 remainingSeconds = (15 * 60) - elapsedSeconds;
-            } else if (booking.getStatus().getStatusName().equals("IN_PROGRESS")) {
+            } else if (booking.getStatus().getName().equals("IN_PROGRESS")) {
             // --- (END OF MODIFICATION) ---
                 if (booking.getMachine() != null && booking.getMachine().getUsageStartTime() != null) {
                     long elapsedSeconds = java.time.Duration.between(booking.getMachine().getUsageStartTime(), now).getSeconds();
@@ -207,7 +202,7 @@ public class BookingController {
             // --- (MODIFIED) ---
             // getStatus() now returns the BookingStatus ENTITY.
             // We get its name (e.g., "COMPLETED") to put in the response.
-            response.put("status", updatedBooking.getStatus().getStatusName());
+            response.put("status", updatedBooking.getStatus().getName());
             // --- (END OF MODIFICATION) ---
             response.put("user", userMap);
             response.put("machine", machineMap);

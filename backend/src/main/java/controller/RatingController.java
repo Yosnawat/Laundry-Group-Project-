@@ -64,7 +64,7 @@ public class RatingController {
             // --- (MODIFIED) ---
             // We now check the 'statusName' string from the BookingStatus entity,
             // instead of comparing with the old enum value.
-            if (booking.getStatus() == null || !"COMPLETED".equals(booking.getStatus().getStatusName())) {
+            if (booking.getStatus() == null || !"COMPLETED".equals(booking.getStatus().getName())) {
             // --- (END OF MODIFICATION) ---
                 return ResponseEntity.badRequest()
                         .body(createErrorResponse("Can only rate completed bookings", "BOOKING_NOT_COMPLETED"));

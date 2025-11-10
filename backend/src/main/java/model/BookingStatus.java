@@ -13,52 +13,47 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 @Entity
-@Table(name = "booking_status") // Table to store the dependent status info
+@Table(name = "booking_status")
+@JsonIdentityInfo(
+  generator = ObjectIdGenerators.PropertyGenerator.class, 
+  property = "id",
+  scope = BookingStatus.class // <-- ADD THIS LINE
+)
 public class BookingStatus {
 
     @Id
-    @Column(name = "booking_id") // This IS the Primary Key
+    @Column(name = "booking_id")
     private Long id;
 
-    /**
-     * This is the owning side of the relationship.
-     * @MapsId tells JPA to use the ID of this 'booking' field
-     * as the value for the '@Id' field (this.id) above.
-     * This makes the primary key a foreign key.
-     */
     @OneToOne(fetch = FetchType.LAZY)
     @MapsId 
     @JoinColumn(name = "booking_id")
     private Booking booking;
 
-    // This field holds the status value (e.g., "PENDING")
-    @Column(name = "status_name", nullable = false)
-    private String statusName;
+    @Column(name = "name", nullable = false)
+    private String name;
 
-    // This field holds the display value (e.g., "Pending")
     @Column(name = "display_name", nullable = false)
     private String displayName;
 
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
     
-    // You could add other status-related fields here,
-    // e.g., private String notes;
-
     @PrePersist
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
-    // --- Constructors ---
+    
     public BookingStatus() {
     }
 
-    // Helper constructor
-    public BookingStatus(String statusName, String displayName) {
-        this.statusName = statusName;
+    public BookingStatus(String name, String displayName) {
+        this.name = name;
         this.displayName = displayName;
     }
 
@@ -80,12 +75,12 @@ public class BookingStatus {
         this.booking = booking;
     }
 
-    public String getStatusName() {
-        return statusName;
+    public String getName() {
+        return name;
     }
 
-    public void setStatusName(String statusName) {
-        this.statusName = statusName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDisplayName() {
@@ -102,5 +97,19 @@ public class BookingStatus {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        BookingStatus that = (BookingStatus) o;
+        return java.util.Objects.equals(id, that.id) &&
+                java.util.Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return java.util.Objects.hash(id, name);
     }
 }

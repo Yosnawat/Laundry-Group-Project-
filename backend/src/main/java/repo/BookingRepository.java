@@ -23,68 +23,65 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findByUserId(Long userId); 
     List<Booking> findByMachineId(Long machineId);
     
-    // --- (MODIFIED) ---
-    // This now queries by the 'statusName' field inside the 'status' entity
-    List<Booking> findByStatus_StatusName(String statusName);
+    // --- (FIXED) ---
+    // This queries by the 'name' field inside the 'status' entity
+    List<Booking> findByStatus_Name(String name);
     
-    // --- (MODIFIED) ---
-    // This also queries by the 'statusName' field
-    List<Booking> findByUserIdAndStatus_StatusName(Long userId, String statusName);
-    // --- (END OF MODIFICATION) ---
+    // --- (FIXED) ---
+    // This also queries by the 'name' field
+    List<Booking> findByUserIdAndStatus_Name(Long userId, String name);
+    // --- (END OF FIX) ---
     
     List<Booking> findByBookingDateBetween(LocalDateTime startDate, LocalDateTime endDate);
 
-    // --- (MODIFIED) ---
+    // --- (FIXED) ---
     @Query("SELECT b FROM Booking b JOIN FETCH b.machine m JOIN FETCH b.user u " +
-           "WHERE b.user.id = :userId AND b.status.statusName IN :statusNames " + // Changed b.status to b.status.statusName
+           "WHERE b.user.id = :userId AND b.status.name IN :statusNames " + // Changed b.status.statusName to b.status.name
            "ORDER BY b.bookingDate ASC")
     List<Booking> findByUserIdAndStatusInWithDetails(
         @Param("userId") Long userId, 
-        @Param("statusNames") List<String> statusNames // Changed parameter type
+        @Param("statusNames") List<String> statusNames
     );
-    // --- (END OF MODIFICATION) ---
+    // --- (END OF FIX) ---
 
-    // --- (MODIFIED) ---
+    // --- (FIXED) ---
     @Query("SELECT COUNT(b) > 0 FROM Booking b " +
            "WHERE b.machine.id = :machineId " +
            "AND b.bookingDate = :bookingDate " +
-           "AND b.status.statusName IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS')") // Changed b.status to b.status.statusName
+           "AND b.status.name IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS')") // Changed b.status.statusName to b.status.name
     boolean existsActiveBookingForMachineAtTime(
         @Param("machineId") Long machineId, 
         @Param("bookingDate") LocalDateTime bookingDate
     );
-    // --- (END OF MODIFICATION) ---
+    // --- (END OF FIX) ---
 
-    // --- (MODIFIED) ---
+    // --- (FIXED) ---
     @Query("SELECT b FROM Booking b JOIN FETCH b.machine m JOIN FETCH b.user u " +
            "WHERE b.bookingDate BETWEEN :startDate AND :endDate " +
-           "AND b.status.statusName IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS')") // Changed b.status to b.status.statusName
+           "AND b.status.name IN ('PENDING', 'CONFIRMED', 'IN_PROGRESS')") // Changed b.status.statusName to b.status.name
     List<Booking> findActiveBookingsByDateRangeWithMachine(
         @Param("startDate") LocalDateTime startDate, 
         @Param("endDate") LocalDateTime endDate
     );
-    // --- (END OF MODIFICATION) ---
+    // --- (END OF FIX) ---
 
-    // --- (MODIFIED) ---
+    // --- (FIXED) ---
     @Query("SELECT b FROM Booking b JOIN FETCH b.machine m JOIN FETCH b.user u " +
-           "WHERE b.user.id = :userId AND b.status.statusName = :statusName " + // Changed b.status to b.status.statusName
+           "WHERE b.user.id = :userId AND b.status.name = :statusName " + // Changed b.status.statusName to b.status.name
            "ORDER BY b.bookingDate DESC")
     List<Booking> findByUserIdAndStatusWithDetails(
         @Param("userId") Long userId, 
-        @Param("statusName") String statusName // Changed parameter type
+        @Param("statusName") String statusName // Parameter name is fine, query is fixed
     );
-    // --- (END OF MODIFICATION) ---
+    // --- (END OF FIX) ---
 
     
     
-    // --- (NEW) METHOD FOR TIMER PAGE FIX ---
-    // --- (MODIFIED) ---
-    // Changed List<BookingStatus> to List<String>
-    // Added @Query to be explicit about the nested property query
-    @Query("SELECT b FROM Booking b WHERE b.user.studentId = :studentId AND b.status.statusName IN :statusNames")
+    // --- (FIXED) METHOD FOR TIMER PAGE FIX ---
+    @Query("SELECT b FROM Booking b WHERE b.user.studentId = :studentId AND b.status.name IN :statusNames") // Changed b.status.statusName to b.status.name
     List<Booking> findByUserStudentIdAndStatusIn(
         @Param("studentId") String studentId, 
         @Param("statusNames") List<String> statusNames
     );
-    // --- (END OF MODIFICATION) ---
+    // --- (END OF FIX) ---
 }

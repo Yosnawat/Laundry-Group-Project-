@@ -67,7 +67,7 @@ public class RatingService {
         
         // --- (MODIFIED) ---
         // We now check the 'statusName' string from the BookingStatus entity.
-        if (booking.getStatus() == null || !"COMPLETED".equals(booking.getStatus().getStatusName())) {
+        if (booking.getStatus() == null || !"COMPLETED".equals(booking.getStatus().getName())) {
         // --- (END OF MODIFICATION) ---
             throw new IllegalStateException("Can only rate completed bookings");
         }
@@ -212,7 +212,7 @@ public class RatingService {
         // Check if booking is completed
         // --- (MODIFIED) ---
         // We now check the 'statusName' string from the BookingStatus entity.
-        if (booking.getStatus() == null || !"COMPLETED".equals(booking.getStatus().getStatusName())) {
+        if (booking.getStatus() == null || !"COMPLETED".equals(booking.getStatus().getName())) {
         // --- (END OF MODIFICATION) ---
             return false;
         }

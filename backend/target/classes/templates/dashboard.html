@@ -193,10 +193,10 @@
 
                     <span class="text-sm font-semibold px-3 py-1 rounded-full"
                           th:text="${booking.status.displayName}"
-                          th:classappend="${booking.status.statusName == 'CONFIRMED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
+                          th:classappend="${booking.status.name == 'CONFIRMED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
                         PENDING
                     </span>
-                    </div>
+                </div>
             </div>
 
             <h3 class="text-xl font-semibold mt-8 mb-4 text-blue-800">Quick Status Overview</h3>
@@ -246,10 +246,10 @@
                             
                             <span class="text-sm font-semibold px-3 py-1 rounded-full"
                                   th:text="${booking.status.displayName}"
-                                  th:classappend="${booking.status.statusName == 'COMPLETED' ? 'bg-gray-100 text-gray-600' : (booking.status.statusName == 'CONFIRMED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700')}">
+                                  th:classappend="${booking.status.name == 'COMPLETED' ? 'bg-gray-100 text-gray-600' : (booking.status.name == 'CONFIRMED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700')}">
                                 STATUS
                             </span>
-                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -410,13 +410,13 @@
 
                 let userName = "Unknown";
                 if (booking && booking.user) {
-                     userName = booking.user.name;
-                     if(booking.user.id === currentManager.id) userName = "ADMIN BLOCK";
+                       userName = booking.user.name;
+                       if(booking.user.id === currentManager.id) userName = "ADMIN BLOCK";
                 }
 
                 if (booking) {
                     
-                    if (booking.status.statusName === 'PENDING') {
+                    if (booking.status.name === 'PENDING') {
                         // --- (กรณีรออนุมัติ: แสดง 2 ปุ่ม) ---
                         slotButtonsHTML += `
                             <div class="text-center bg-yellow-50 p-2 rounded-lg border border-yellow-200">
@@ -498,12 +498,10 @@
                 const index = todaysBookings.findIndex(b => b.id === bookingId);
                 if (index > -1) {
                     
-                    // --- (FIXED) ---
-                    // The 'updatedBooking' response has 'status' as a string (e.g., "IN_PROGRESS").
-                    // We must update the 'statusName' property of the status *object* in our local array.
-                    todaysBookings[index].status.statusName = updatedBooking.status;
-                    todaysBookings[index].status.displayName = "In Progress"; // Keep it consistent
-                    // --- (END OF FIX) ---
+                    // --- (FIXED - This logic was updated but let's make it correct) ---
+                    // The 'updatedBooking' response has 'status' which is the BookingStatus object
+                    // So we can just assign it directly.
+                    todaysBookings[index].status = updatedBooking.status; 
                 }
                 renderAdminSchedule();
             },
@@ -564,14 +562,10 @@
             amount: 0.0,
             service: "ADMIN_BLOCK",
             
-            // --- (FIXED) ---
-            // Sent a string, but the createBooking endpoint
-            // expects a BookingStatus object.
             status: {
-                statusName: "CONFIRMED",
+                name: "CONFIRMED",
                 displayName: "Confirmed"
             }
-            // --- (END OF FIX) ---
         };
 
         $.ajax({

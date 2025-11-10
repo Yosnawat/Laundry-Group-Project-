@@ -17,8 +17,16 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+
 @Entity
 @Table(name = "bookings")
+@JsonIdentityInfo(
+  generator = ObjectIdGenerators.PropertyGenerator.class, 
+  property = "id",
+  scope = Booking.class // <-- ADD THIS LINE
+)
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,17 +46,6 @@ public class Booking {
     @Column(nullable = true)
     private LocalDateTime confirmationExpiryTime;
 
-    /**
-     * This is the inverse side of the OneToOne relationship.
-     * 'mappedBy = "booking"' points to the 'booking' field in the
-     * BookingStatus entity, which owns the relationship.
-     * 'CascadeType.ALL' is crucial: When you save a Booking,
-     * its associated BookingStatus object will be saved.
-     * When you delete a Booking, its BookingStatus will be deleted.
-     * 'orphanRemoval = true' ensures that if you set
-     * booking.setStatus(null), the old status object is
-     * deleted from the database.
-     */
     @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private BookingStatus status;
 
@@ -68,8 +65,6 @@ public class Booking {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
-        // Setting a default status MUST now be done in your service layer
-        // *before* you save the booking.
     }
 
     @PreUpdate
@@ -123,10 +118,6 @@ public class Booking {
         return status;
     }
 
-    /**
-     * Helper method to set the status and maintain
-     * the bidirectional link.
-     */
     public void setStatus(BookingStatus status) {
         if (status == null) {
             if (this.status != null) {

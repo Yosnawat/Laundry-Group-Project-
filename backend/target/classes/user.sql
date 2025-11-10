@@ -16,31 +16,34 @@ VALUES
 
 --
 -- (THIS SECTION IS FIXED)
--- Insert bookings and their corresponding statuses
+-- We remove the 'id' column so the database will auto-generate it.
 --
 
--- Booking 1 (Maps to user_id 1, machine_id 1)
-INSERT INTO bookings (id, user_id, machine_id, booking_date, confirmation_expiry_time, rating, amount, service, created_at, updated_at)
+-- Booking 1 (Will get ID=1)
+INSERT INTO bookings (user_id, machine_id, booking_date, confirmation_expiry_time, rating, amount, service, created_at, updated_at)
 VALUES 
-(1, 1, 1, '2025-10-28 10:00:00', NULL, NULL, 5.50, 'Washing', NOW(), NOW());
+(1, 1, '2025-10-28 10:00:00', NULL, NULL, 5.50, 'Washing', NOW(), NOW());
 
-INSERT INTO booking_status (booking_id, status_name, display_name, updated_at) 
+-- This still works, it refers to the booking with ID=1
+INSERT INTO booking_status (booking_id, name, display_name, updated_at) 
 VALUES (1, 'CONFIRMED', 'Confirmed', NOW());
 
 
--- Booking 2 (Maps to user_id 1, machine_id 2)
-INSERT INTO bookings (id, user_id, machine_id, booking_date, confirmation_expiry_time, rating, amount, service, created_at, updated_at)
+-- Booking 2 (Will get ID=2)
+INSERT INTO bookings (user_id, machine_id, booking_date, confirmation_expiry_time, rating, amount, service, created_at, updated_at)
 VALUES 
-(2, 1, 2, '2025-10-28 14:00:00', NULL, NULL, 5.50, 'Washing', NOW(), NOW());
+(1, 2, '2025-10-28 14:00:00', NULL, NULL, 5.50, 'Washing', NOW(), NOW());
 
-INSERT INTO booking_status (booking_id, status_name, display_name, updated_at) 
+-- This still works, it refers to the booking with ID=2
+INSERT INTO booking_status (booking_id, name, display_name, updated_at) 
 VALUES (2, 'PENDING', 'Pending', NOW());
 
 
--- Booking 3 (Maps to user_id 2, machine_id 1)
-INSERT INTO bookings (id, user_id, machine_id, booking_date, confirmation_expiry_time, rating, amount, service, created_at, updated_at)
+-- Booking 3 (Will get ID=3)
+INSERT INTO bookings (user_id, machine_id, booking_date, confirmation_expiry_time, rating, amount, service, created_at, updated_at)
 VALUES 
-(3, 2, 1, '2025-10-29 09:00:00', NULL, NULL, 5.50, 'Washing', NOW(), NOW());
+(2, 1, '2025-10-29 09:00:00', NULL, NULL, 5.50, 'Washing', NOW(), NOW());
 
-INSERT INTO booking_status (booking_id, status_name, display_name, updated_at) 
+-- This still works, it refers to the booking with ID=3
+INSERT INTO booking_status (booking_id, name, display_name, updated_at) 
 VALUES (3, 'CONFIRMED', 'Confirmed', NOW());
