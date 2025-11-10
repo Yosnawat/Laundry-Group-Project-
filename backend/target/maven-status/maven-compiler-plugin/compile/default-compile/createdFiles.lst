@@ -1,4 +1,3 @@
-service/MachineService$MachineWithRating.class
 controller/DashboardController.class
 controller/RatingController$RatingRequest.class
 App.class
