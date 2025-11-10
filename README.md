@@ -1,3 +1,26 @@
+ALMOST DONE(DEBUGGING)
+-
+-
+FIX THESE:
+1. RATING - YOU CAN't PRESS OK FOR SOME REASON
+2. booked - After a student finished booking a section, turn the section to USED after the student submitted rating. DO NOT ALLOW FOR ANOTHER BOOKING. KEEP LIKE THIS FOREVER.
+
+<img width="213" height="136" alt="image" src="https://github.com/user-attachments/assets/760e73d9-9356-439e-a3f2-31fdc10cab84" />
+
+
+3. MACHINE PAGE: Review is not working. Stars are N/A.
+4. ADD A new feature for admin so that they can edit machine page.
+5. Remove maintenance. It does the same thing as OUT_OF_Service
+ <img width="1146" height="752" alt="image" src="https://github.com/user-attachments/assets/1d70a019-8af5-451a-985f-892e0f019e29" />
+6. TRY BLOCKING a slot from admin and go to student. It shows : <img width="1391" height="363" alt="image" src="https://github.com/user-attachments/assets/c74938d1-7a23-46d8-9d45-8eb7ee950528" />
+
+
+
+
+
+
+
+
 PLEASE REFERENCE TO **LaundryManagementSystem.pdf** DONT JUST PUT EVERYTHING IN AI!
 -
 -
@@ -64,6 +87,7 @@ SYSTEM INTERACTION BETWEEN MANAGER,REGISTER USER AND BOOK MACHINE!
 
  Add Exception handling/Validation/Api
 ```
+
 
 
 
