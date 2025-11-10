@@ -1,3 +1,4 @@
+-- This table is correct
 CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     student_id VARCHAR(255) UNIQUE NOT NULL,
@@ -10,6 +11,7 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP
 );
 
+-- This table is correct
 CREATE TABLE IF NOT EXISTS machines (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     machine_number VARCHAR(255) NOT NULL UNIQUE,
@@ -36,12 +38,18 @@ CREATE TABLE IF NOT EXISTS machines (
 );
 
 
+--
+-- THIS TABLE IS MODIFIED
+--
 CREATE TABLE IF NOT EXISTS bookings (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     machine_id BIGINT NOT NULL,
     booking_date TIMESTAMP NOT NULL,
-    status VARCHAR(50) NOT NULL DEFAULT 'PENDING',
+    
+    confirmation_expiry_time TIMESTAMP,
+    rating INT,
+    
     amount DOUBLE NOT NULL,
     service VARCHAR(255),
     created_at TIMESTAMP NOT NULL,
@@ -50,6 +58,24 @@ CREATE TABLE IF NOT EXISTS bookings (
     FOREIGN KEY (machine_id) REFERENCES machines(id)
 );
 
+--
+-- THIS TABLE IS NEW AND REQUIRED
+--
+CREATE TABLE IF NOT EXISTS booking_status (
+    booking_id BIGINT NOT NULL PRIMARY KEY,
+    status_name VARCHAR(255) NOT NULL,
+    display_name VARCHAR(255) NOT NULL,
+    updated_at TIMESTAMP NOT NULL,
+    
+    -- This links the status to the booking and makes it dependent
+    CONSTRAINT fk_booking_status_to_booking
+        FOREIGN KEY (booking_id)
+        REFERENCES bookings(id)
+        ON DELETE CASCADE -- If the booking is deleted, delete its status
+);
+
+
+-- This table is correct
 CREATE TABLE IF NOT EXISTS ratings (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,

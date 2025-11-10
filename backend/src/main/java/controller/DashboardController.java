@@ -7,14 +7,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+
 import model.AppConstants;
 import model.Booking;
-import model.BookingStatus;
-import model.Machine;
+import model.Machine; // This import is still correct (now imports the entity)
 import model.Role;
 import model.User;
 import service.BookingService;
@@ -50,15 +51,22 @@ public class DashboardController {
 
         List<Booking> allStudentBookings = bookingService.getBookingsByUserId(currentUser.getId());
 
+        // --- (MODIFIED) ---
+        // We now check the 'statusName' string from the BookingStatus entity,
+        // instead of comparing with the old enum value.
         Optional<Booking> activeBookingOpt = allStudentBookings.stream()
-                .filter(b -> b.getStatus() == BookingStatus.IN_PROGRESS)
+                .filter(b -> b.getStatus() != null && "IN_PROGRESS".equals(b.getStatus().getStatusName()))
                 .findFirst();
+        // --- (END OF MODIFICATION) ---
         
         model.addAttribute("activeBooking", activeBookingOpt.orElse(null));
 
+        // --- (MODIFIED) ---
+        // We check the 'statusName' string here as well.
         List<Booking> upcomingBookings = allStudentBookings.stream()
-                .filter(b -> b.getStatus() != BookingStatus.IN_PROGRESS)
+                .filter(b -> b.getStatus() == null || !"IN_PROGRESS".equals(b.getStatus().getStatusName()))
                 .collect(Collectors.toList());
+        // --- (END OF MODIFICATION) ---
         
         model.addAttribute("studentBookings", upcomingBookings);
 

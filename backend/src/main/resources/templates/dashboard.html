@@ -170,7 +170,8 @@
                 <div class="flex justify-between items-center border-t border-blue-400 pt-3">
                     <div>
                         <p class="font-bold" th:text="${activeBooking.machine.machineNumber}">Washer 1</p>
-                        <p class="text-sm opacity-90" th:text="'Status: ' + ${activeBooking.status}">Status: IN_PROGRESS</p>
+                        
+                        <p class="text-sm opacity-90" th:text="'Status: ' + ${activeBooking.status.displayName}">Status: IN_PROGRESS</p>
                     </div>
                     <span class="text-lg font-bold">Click to View Timer &rarr;</span>
                 </div>
@@ -191,11 +192,11 @@
                     </div>
 
                     <span class="text-sm font-semibold px-3 py-1 rounded-full"
-                          th:text="${booking.status}"
-                          th:classappend="${booking.status.toString() == 'CONFIRMED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
+                          th:text="${booking.status.displayName}"
+                          th:classappend="${booking.status.statusName == 'CONFIRMED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
                         PENDING
                     </span>
-                </div>
+                    </div>
             </div>
 
             <h3 class="text-xl font-semibold mt-8 mb-4 text-blue-800">Quick Status Overview</h3>
@@ -242,12 +243,13 @@
                                     </p>
                                 </div>
                             </div>
+                            
                             <span class="text-sm font-semibold px-3 py-1 rounded-full"
-                                  th:text="${booking.status}"
-                                  th:classappend="${booking.status.toString() == 'COMPLETED' ? 'bg-gray-100 text-gray-600' : (booking.status.toString() == 'CONFIRMED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700')}">
+                                  th:text="${booking.status.displayName}"
+                                  th:classappend="${booking.status.statusName == 'COMPLETED' ? 'bg-gray-100 text-gray-600' : (booking.status.statusName == 'CONFIRMED' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700')}">
                                 STATUS
                             </span>
-                        </div>
+                            </div>
                     </div>
                 </div>
 
@@ -413,7 +415,8 @@
                 }
 
                 if (booking) {
-                    if (booking.status === 'PENDING') {
+                    
+                    if (booking.status.statusName === 'PENDING') {
                         // --- (กรณีรออนุมัติ: แสดง 2 ปุ่ม) ---
                         slotButtonsHTML += `
                             <div class="text-center bg-yellow-50 p-2 rounded-lg border border-yellow-200">
@@ -438,7 +441,7 @@
                                 <span class="text-xs font-semibold text-gray-700">${slotTime}</span>
                                 <button class="admin-slot-btn admin-btn-taken w-full mt-1 btn-cancel-booking" 
                                         data-booking-id="${booking.id}">
-                                     IN USE: ${userName}
+                                    IN USE: ${userName}
                                 </button>
                             </div>
                         `;
@@ -494,7 +497,13 @@
                 // อัปเดตข้อมูลในตาราง local
                 const index = todaysBookings.findIndex(b => b.id === bookingId);
                 if (index > -1) {
-                    todaysBookings[index].status = updatedBooking.status;
+                    
+                    // --- (FIXED) ---
+                    // The 'updatedBooking' response has 'status' as a string (e.g., "IN_PROGRESS").
+                    // We must update the 'statusName' property of the status *object* in our local array.
+                    todaysBookings[index].status.statusName = updatedBooking.status;
+                    todaysBookings[index].status.displayName = "In Progress"; // Keep it consistent
+                    // --- (END OF FIX) ---
                 }
                 renderAdminSchedule();
             },
@@ -554,7 +563,15 @@
             bookingDate: slotTime, 
             amount: 0.0,
             service: "ADMIN_BLOCK",
-            status: "CONFIRMED"
+            
+            // --- (FIXED) ---
+            // Sent a string, but the createBooking endpoint
+            // expects a BookingStatus object.
+            status: {
+                statusName: "CONFIRMED",
+                displayName: "Confirmed"
+            }
+            // --- (END OF FIX) ---
         };
 
         $.ajax({

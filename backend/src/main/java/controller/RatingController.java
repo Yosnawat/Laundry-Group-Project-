@@ -18,8 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import model.Booking;
-import model.BookingStatus;
-import model.Rating;
+import model.Rating; // This import is still correct (now imports the entity)
 import service.BookingService;
 import service.RatingService;
 
@@ -40,16 +39,14 @@ public class RatingController {
 
     /**
      * Submits a rating and review for a completed booking.
-     * 
-     * Workflow:
+     * * Workflow:
      * 1. Validates booking exists and is completed
      * 2. Verifies user owns the booking
      * 3. Checks booking hasn't been rated already
      * 4. Validates rating value (1-5)
      * 5. Calls RatingService to save rating
      * 6. Returns safe response (prevents JSON infinite loop)
-     * 
-     * @param ratingRequest RatingRequest containing bookingId, userId, rating, reviewText
+     * * @param ratingRequest RatingRequest containing bookingId, userId, rating, reviewText
      * @return ResponseEntity with rating ID or error message
      */
     @PostMapping
@@ -63,7 +60,12 @@ public class RatingController {
             }
 
             Booking booking = bookingOpt.get();
-            if (booking.getStatus() != BookingStatus.COMPLETED) {
+            
+            // --- (MODIFIED) ---
+            // We now check the 'statusName' string from the BookingStatus entity,
+            // instead of comparing with the old enum value.
+            if (booking.getStatus() == null || !"COMPLETED".equals(booking.getStatus().getStatusName())) {
+            // --- (END OF MODIFICATION) ---
                 return ResponseEntity.badRequest()
                         .body(createErrorResponse("Can only rate completed bookings", "BOOKING_NOT_COMPLETED"));
             }
@@ -115,8 +117,7 @@ public class RatingController {
 
     /**
      * Retrieves all ratings for a specific machine.
-     * 
-     * @param machineId Machine ID to get ratings for
+     * * @param machineId Machine ID to get ratings for
      * @return ResponseEntity with list of ratings
      */
     @GetMapping("/machine/{machineId}")
@@ -127,8 +128,7 @@ public class RatingController {
 
     /**
      * Retrieves all ratings submitted by a specific user.
-     * 
-     * @param userId User ID to get ratings for
+     * * @param userId User ID to get ratings for
      * @return ResponseEntity with list of user's ratings
      */
     @GetMapping("/user/{userId}")
@@ -140,8 +140,7 @@ public class RatingController {
     /**
      * Retrieves rating statistics for a specific machine.
      * Returns average rating, total rating count, and distribution (1-5 stars).
-     * 
-     * @param machineId Machine ID to get statistics for
+     * * @param machineId Machine ID to get statistics for
      * @return ResponseEntity with MachineRatingStats
      */
     @GetMapping("/machine/{machineId}/stats")
@@ -152,8 +151,7 @@ public class RatingController {
 
     /**
      * Retrieves all ratings in the system (admin endpoint).
-     * 
-     * @return ResponseEntity with list of all ratings
+     * * @return ResponseEntity with list of all ratings
      */
     @GetMapping
     public ResponseEntity<List<Rating>> getAllRatings() {
@@ -164,8 +162,7 @@ public class RatingController {
     /**
      * Checks if a user can rate a specific booking.
      * Validates booking is completed, user owns it, and it hasn't been rated.
-     * 
-     * @param bookingId Booking ID to check
+     * * @param bookingId Booking ID to check
      * @param userId User ID making the request
      * @return ResponseEntity with canRate boolean
      */
@@ -182,8 +179,7 @@ public class RatingController {
 
     /**
      * Retrieves the rating for a specific booking.
-     * 
-     * @param bookingId Booking ID to get rating for
+     * * @param bookingId Booking ID to get rating for
      * @return ResponseEntity with rating or 404 if not found
      */
     @GetMapping("/booking/{bookingId}")
@@ -204,8 +200,7 @@ public class RatingController {
     /**
      * Retrieves ratings with review text for a specific machine.
      * Only returns ratings that have non-empty review text.
-     * 
-     * @param machineId Machine ID to get reviews for
+     * * @param machineId Machine ID to get reviews for
      * @return ResponseEntity with list of ratings with reviews
      */
     @GetMapping("/machine/{machineId}/reviews")
@@ -221,8 +216,7 @@ public class RatingController {
     /**
      * Retrieves the most recent ratings across all machines.
      * Useful for displaying recent activity or feedback on dashboard.
-     * 
-     * @return ResponseEntity with list of recent ratings
+     * * @return ResponseEntity with list of recent ratings
      */
     @GetMapping("/recent")
     public ResponseEntity<List<Rating>> getRecentRatings() {
@@ -236,8 +230,7 @@ public class RatingController {
 
     /**
      * Helper method to create standardized error responses.
-     * 
-     * @param message Error message to display
+     * * @param message Error message to display
      * @param code Error code for client handling
      * @return Map containing error and code fields
      */
@@ -313,8 +306,7 @@ public class RatingController {
 
         /**
          * Constructs MachineRatingStats with all fields.
-         * 
-         * @param averageRating Average rating value
+         * * @param averageRating Average rating value
          * @param totalRatings Total number of ratings
          * @param ratingDistribution Map of rating value to count
          */

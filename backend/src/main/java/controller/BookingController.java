@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import model.Booking;
-import model.BookingStatus;
+import model.BookingStatus; // This import is still correct (now imports the entity)
 import service.BookingService;
 
 @RestController
@@ -73,13 +73,19 @@ public class BookingController {
 
     @GetMapping("/status/{status}")
     public ResponseEntity<List<Booking>> getBookingsByStatus(@PathVariable String status) {
+        // --- (MODIFIED) ---
+        // We no longer use BookingStatus.valueOf().
+        // We pass the raw status string (e.g., "PENDING") to the service,
+        // which will handle the query.
         try {
-            BookingStatus bookingStatus = BookingStatus.valueOf(status.toUpperCase());
-            List<Booking> bookings = bookingService.getBookingsByStatus(bookingStatus);
+            // We pass the status string (which should be the 'statusName' like "PENDING")
+            List<Booking> bookings = bookingService.getBookingsByStatus(status.toUpperCase());
             return ResponseEntity.ok(bookings);
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
+            // Catch a more generic exception in case the service throws one
             return ResponseEntity.badRequest().build();
         }
+        // --- (END OF MODIFICATION) ---
     }
 
     @GetMapping("/stats/total")
@@ -89,13 +95,15 @@ public class BookingController {
 
     @GetMapping("/stats/by-status/{status}")
     public ResponseEntity<Long> getBookingCountByStatus(@PathVariable String status) {
+        // --- (MODIFIED) ---
+        // Same as getBookingsByStatus, we pass the raw string to the service.
         try {
-            BookingStatus bookingStatus = BookingStatus.valueOf(status.toUpperCase());
-            long count = bookingService.getBookingCountByStatus(bookingStatus);
+            long count = bookingService.getBookingCountByStatus(status.toUpperCase());
             return ResponseEntity.ok(count);
-        } catch (IllegalArgumentException e) {
+        } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }
+        // --- (END OF MODIFICATION) ---
     }
 
     @PostMapping
@@ -127,7 +135,11 @@ public class BookingController {
             Booking updatedBooking = bookingService.approveBooking(id);
             Map<String, Object> response = new HashMap<>();
             response.put("id", updatedBooking.getId());
-            response.put("status", updatedBooking.getStatus());
+            // --- (MODIFIED) ---
+            // getStatus() now returns the BookingStatus ENTITY.
+            // We get its name (e.g., "CONFIRMED") to put in the response.
+            response.put("status", updatedBooking.getStatus().getStatusName());
+            // --- (END OF MODIFICATION) ---
             response.put("message", "Approve Success");
             return ResponseEntity.ok(response);
         } catch (IllegalStateException e) {
@@ -144,15 +156,24 @@ public class BookingController {
         if (bookingOpt.isPresent()) {
             Booking booking = bookingOpt.get();
             Map<String, Object> response = new HashMap<>();
-            response.put("status", booking.getStatus().name());
+            
+            // --- (MODIFIED) ---
+            // getStatus() returns the entity, getStatusName() returns the string "PENDING", etc.
+            // .name() no longer exists.
+            response.put("status", booking.getStatus().getStatusName());
+            // --- (END OF MODIFICATION) ---
 
             long remainingSeconds = 0;
             LocalDateTime now = LocalDateTime.now();
 
-            if (booking.getStatus() == BookingStatus.PENDING) {
+            // --- (MODIFIED) ---
+            // We can't compare the entity (booking.getStatus()) to an enum (BookingStatus.PENDING).
+            // We must compare the status name string.
+            if (booking.getStatus().getStatusName().equals("PENDING")) {
                 long elapsedSeconds = java.time.Duration.between(booking.getCreatedAt(), now).getSeconds();
                 remainingSeconds = (15 * 60) - elapsedSeconds;
-            } else if (booking.getStatus() == BookingStatus.IN_PROGRESS) {
+            } else if (booking.getStatus().getStatusName().equals("IN_PROGRESS")) {
+            // --- (END OF MODIFICATION) ---
                 if (booking.getMachine() != null && booking.getMachine().getUsageStartTime() != null) {
                     long elapsedSeconds = java.time.Duration.between(booking.getMachine().getUsageStartTime(), now).getSeconds();
                     remainingSeconds = (60 * 60) - elapsedSeconds;
@@ -183,7 +204,11 @@ public class BookingController {
             
             Map<String, Object> response = new HashMap<>();
             response.put("id", updatedBooking.getId());
-            response.put("status", updatedBooking.getStatus());
+            // --- (MODIFIED) ---
+            // getStatus() now returns the BookingStatus ENTITY.
+            // We get its name (e.g., "COMPLETED") to put in the response.
+            response.put("status", updatedBooking.getStatus().getStatusName());
+            // --- (END OF MODIFICATION) ---
             response.put("user", userMap);
             response.put("machine", machineMap);
             return ResponseEntity.ok(response);

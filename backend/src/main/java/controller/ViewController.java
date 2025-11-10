@@ -8,11 +8,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable; // Import this
 
-import controller.MachineDetailDTO;
-import model.Booking; // Import this
-import model.BookingStatus;
-import model.User; 
-import service.BookingService;
+import model.Booking;
+import model.User; // Import this
+import service.BookingService; // This import is still correct (now imports the entity)
 import service.MachineManagementService;
 import service.UserService; 
 
@@ -42,9 +40,12 @@ public class ViewController {
     public String booking(Model model) {
         model.addAttribute("bookings", bookingService.getAllBookings());
         model.addAttribute("totalBookings", bookingService.getTotalBookings());
-        model.addAttribute("confirmedBookings", bookingService.getBookingCountByStatus(BookingStatus.CONFIRMED));
-        model.addAttribute("pendingBookings", bookingService.getBookingCountByStatus(BookingStatus.PENDING));
-        model.addAttribute("cancelledBookings", bookingService.getBookingCountByStatus(BookingStatus.CANCELLED));
+        // --- (MODIFIED) ---
+        // We now pass the status name as a String, not an enum.
+        model.addAttribute("confirmedBookings", bookingService.getBookingCountByStatus("CONFIRMED"));
+        model.addAttribute("pendingBookings", bookingService.getBookingCountByStatus("PENDING"));
+        model.addAttribute("cancelledBookings", bookingService.getBookingCountByStatus("CANCELLED"));
+        // --- (END OF MODIFICATION) ---
         return "booking";
     }
 

@@ -65,13 +65,18 @@ public class BookingService {
 
     /**
      * Retrieves all bookings with a specific status.
-     * @param status Booking status to filter by
+     * @param statusName Booking status name (e.g., "PENDING") to filter by
      * @return List of bookings with the specified status
      */
     @Transactional(readOnly = true)
-    public List<Booking> getBookingsByStatus(BookingStatus status) {
-        return bookingRepository.findByStatus(status);
+    // --- (MODIFIED) ---
+    // The signature is changed from (BookingStatus status) to (String statusName)
+    // to match the controller and new entity structure.
+    public List<Booking> getBookingsByStatus(String statusName) {
+        // This now queries by the 'statusName' field *within* the BookingStatus entity
+        return bookingRepository.findByStatus_StatusName(statusName);
     }
+    // --- (END OF MODIFICATION) ---
 
     /**
      * Counts the total number of bookings.
@@ -83,12 +88,19 @@ public class BookingService {
 
     /**
      * Counts bookings with a specific status.
-     * @param status Booking status to count
+     * @param statusName Booking status name (e.g., "PENDING") to count
      * @return Number of bookings with the status
      */
-    public Long getBookingCountByStatus(BookingStatus status) {
-        return (long) bookingRepository.findByStatus(status).size();
+    // --- (MODIFIED) ---
+    // The signature is changed from (BookingStatus status) to (String statusName)
+    public Long getBookingCountByStatus(String statusName) {
+        // This preserves your original logic of .size() on the findByStatus method.
+        // The repository method is now 'findByStatus_StatusName'
+        return (long) bookingRepository.findByStatus_StatusName(statusName).size();
+        // NOTE: A more efficient way is to use a count query in the repository:
+        // return bookingRepository.countByStatus_StatusName(statusName);
     }
+    // --- (END OF MODIFICATION) ---
 
     /**
      * Creates a new booking with validation.
@@ -98,8 +110,7 @@ public class BookingService {
      * 3. Checks if time slot is already taken
      * 4. Sets status to PENDING if not provided
      * 5. Saves booking to database
-     * 
-     * @param booking Booking object to create
+     * * @param booking Booking object to create
      * @return Created booking
      * @throws IllegalArgumentException if validation fails
      * @throws IllegalStateException if time slot is already taken
@@ -121,17 +132,25 @@ public class BookingService {
         if (isSlotTaken) {
             throw new IllegalStateException("This time slot for this machine is already taken.");
         }
+        
+        // --- (MODIFIED) ---
+        // We can no longer set 'BookingStatus.PENDING'.
+        // We must create the new dependent BookingStatus entity.
         if (booking.getStatus() == null) {
-            booking.setStatus(BookingStatus.PENDING);
+            // Create the new entity
+            BookingStatus defaultStatus = new BookingStatus("PENDING", "Pending");
+            // Link it to the booking (the helper method in Booking.java handles both sides)
+            booking.setStatus(defaultStatus);
         }
+        // --- (END OF MODIFICATION) ---
+        
         return bookingRepository.save(booking);
     }
 
     /**
      * Updates an existing booking with new details.
      * Only updates fields that are non-null in the bookingDetails parameter.
-     * 
-     * @param id ID of booking to update
+     * * @param id ID of booking to update
      * @param bookingDetails Booking object containing updated fields
      * @return Updated booking
      * @throws IllegalArgumentException if booking not found
@@ -143,9 +162,16 @@ public class BookingService {
         if (bookingDetails.getBookingDate() != null) {
             booking.setBookingDate(bookingDetails.getBookingDate());
         }
+        
+        // --- (NO CHANGE NEEDED HERE) ---
+        // This logic is still correct. If the request body provides a new 'status' object,
+        // the booking.setStatus() helper will link it, and CascadeType.ALL + orphanRemoval
+        // will replace the old status entity in the database.
         if (bookingDetails.getStatus() != null) {
             booking.setStatus(bookingDetails.getStatus());
         }
+        // --- (END OF NO CHANGE) ---
+        
         if (bookingDetails.getAmount() != null) {
             booking.setAmount(bookingDetails.getAmount());
         }
@@ -189,8 +215,7 @@ public class BookingService {
      * 4. Updates machine status to IN_USE
      * 5. Sets current user and usage start time on machine
      * 6. Saves both booking and machine
-     * 
-     * @param bookingId ID of booking to approve
+     * * @param bookingId ID of booking to approve
      * @return Updated booking
      * @throws IllegalArgumentException if booking not found
      * @throws IllegalStateException if booking status is not PENDING or IN_PROGRESS
@@ -200,12 +225,24 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found with ID: " + bookingId));
 
-        if (booking.getStatus() == BookingStatus.IN_PROGRESS) {
+        // --- (MODIFIED) ---
+        // We must get the status entity and check its 'statusName' property.
+        BookingStatus status = booking.getStatus();
+        if (status == null) {
+            throw new IllegalStateException("Booking " + bookingId + " has no status.");
+        }
+
+        if ("IN_PROGRESS".equals(status.getStatusName())) {
+        // --- (END OF MODIFICATION) ---
             return booking;
         }
 
-        if (booking.getStatus() == BookingStatus.PENDING) {
-            booking.setStatus(BookingStatus.IN_PROGRESS);
+        // --- (MODIFIED) ---
+        if ("PENDING".equals(status.getStatusName())) {
+            // We update the fields of the *existing* status entity
+            status.setStatusName("IN_PROGRESS");
+            status.setDisplayName("In Progress");
+            // --- (END OF MODIFICATION) ---
             
             Machine machine = booking.getMachine();
             if (machine != null) {
@@ -217,9 +254,13 @@ public class BookingService {
                  throw new IllegalStateException("Booking is not linked to a machine.");
             }
             
+            // Saving the booking will persist the changes to its status entity
             return bookingRepository.save(booking);
         } else {
-            throw new IllegalStateException("ทำรายการไม่สำเร็จ สถานะปัจจุบันคือ: " + booking.getStatus());
+            // --- (MODIFIED) ---
+            // Use the display name for a cleaner error message
+            throw new IllegalStateException("ทำรายการไม่สำเร็จ สถานะปัจจุบันคือ: " + status.getDisplayName());
+            // --- (END OF MODIFICATION) ---
         }
     }
 
@@ -232,8 +273,7 @@ public class BookingService {
      * 4. Updates machine status to AVAILABLE
      * 5. Clears machine's current user and usage time
      * 6. Saves both booking and machine
-     * 
-     * @param bookingId ID of booking to complete
+     * * @param bookingId ID of booking to complete
      * @return Updated booking
      * @throws IllegalArgumentException if booking not found
      * @throws IllegalStateException if booking is not IN_PROGRESS
@@ -243,8 +283,17 @@ public class BookingService {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new IllegalArgumentException("Booking not found with ID: " + bookingId));
 
-        if (booking.getStatus() == BookingStatus.IN_PROGRESS) {
-            booking.setStatus(BookingStatus.COMPLETED);
+        // --- (MODIFIED) ---
+        BookingStatus status = booking.getStatus();
+        if (status == null) {
+            throw new IllegalStateException("Booking " + bookingId + " has no status.");
+        }
+
+        if ("IN_PROGRESS".equals(status.getStatusName())) {
+            // We update the fields of the *existing* status entity
+            status.setStatusName("COMPLETED");
+            status.setDisplayName("Completed");
+            // --- (END OF MODIFICATION) ---
 
             Machine machine = booking.getMachine();
             if (machine != null) {
@@ -267,7 +316,11 @@ public class BookingService {
      */
     @Transactional(readOnly = true)
     public List<Booking> getCompletedBookingsForRating(Long userId) {
-        return bookingRepository.findByUserIdAndStatusWithDetails(userId, BookingStatus.COMPLETED);
+        // --- (MODIFIED) ---
+        // We pass the string "COMPLETED" instead of the enum.
+        // The repository method signature must also be changed.
+        return bookingRepository.findByUserIdAndStatusWithDetails(userId, "COMPLETED");
+        // --- (END OF MODIFICATION) ---
     }
 
     /**
@@ -276,7 +329,10 @@ public class BookingService {
      */
     @Transactional(readOnly = true)
     public List<Booking> getCompletedBookings() {
-        return bookingRepository.findByStatus(BookingStatus.COMPLETED);
+        // --- (MODIFIED) ---
+        // This will now use the repository method findByStatus_StatusName
+        return bookingRepository.findByStatus_StatusName("COMPLETED");
+        // --- (END OF MODIFICATION) ---
     }
 
     /**
@@ -285,7 +341,10 @@ public class BookingService {
      */
     @Transactional(readOnly = true)
     public List<Booking> getInProgressBookings() {
-        return bookingRepository.findByStatus(BookingStatus.IN_PROGRESS);
+        // --- (MODIFIED) ---
+        // This will now use the repository method findByStatus_StatusName
+        return bookingRepository.findByStatus_StatusName("IN_PROGRESS");
+        // --- (END OF MODIFICATION) ---
     }
 
     /**
@@ -295,10 +354,14 @@ public class BookingService {
      */
     @Transactional(readOnly = true)
     public Optional<Booking> findActiveBookingByStudentId(String studentId) {
+        // --- (MODIFIED) ---
+        // We now pass a List<String> instead of List<BookingStatus>.
+        // The repository method signature must also be changed.
         List<Booking> activeBookings = bookingRepository.findByUserStudentIdAndStatusIn(
-            studentId,
-            List.of(BookingStatus.PENDING, BookingStatus.IN_PROGRESS)
+                studentId,
+                List.of("PENDING", "IN_PROGRESS")
         );
+        // --- (END OF MODIFICATION) ---
         
         if (activeBookings.isEmpty()) {
             return Optional.empty();
