@@ -2,8 +2,9 @@
 INSERT INTO users (student_id, name, email, password, role, is_active, created_at, updated_at)
 VALUES 
 ('6731503032', 'Wacharaphong Sutthiboriban', '6731503032@lamduan.mfu.ac.th', 'password', 'STUDENT', TRUE, NOW(), NOW()),
-('ADMIN', 'Manager', 'admin@example.com', 'adminpassword', 'MANAGER', TRUE, NOW(), NOW());
-
+('ADMIN', 'Manager', 'admin@example.com', 'adminpassword', 'MANAGER', TRUE, NOW(), NOW()),
+('1', '1', '1@gmail.com', '1', 'MANAGER', TRUE, NOW(), NOW()),
+('2', '2', '2@gmail.com', '1', 'STUDENT', TRUE, NOW(), NOW());
 -- Inserts machines (No changes needed)
 INSERT INTO machines (machine_number, name, machine_type, brand, model, capacity, status, location, description, price_per_hour, price_per_day, current_user_id, usage_start_time, created_at, updated_at) 
 VALUES 
