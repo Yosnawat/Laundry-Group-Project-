@@ -7,7 +7,7 @@
 
     <meta name="_csrf" th:content="${_csrf?.token}"/>
     <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
-    
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -113,7 +113,7 @@
             background-color: #d1fae5;
             color: #046c4e;
         }
-        .admin-btn-taken { 
+        .admin-btn-taken {
             background-color: #fffbeb;
             color: #b45309; border: 1px solid #fde68a;
         }
@@ -142,14 +142,14 @@
                 <button data-target="dashboard-view" class="tab-btn active">Dashboard</button>
                 
                 <a th:if="${currentUser.role.toString() == 'STUDENT'}"
-                   th:href="@{/student/{studentId}/booking(studentId=${currentUser.studentId})}"
-                   class="tab-btn">Booking</a>
+                    th:href="@{/student/{studentId}/booking(studentId=${currentUser.studentId})}"
+                    class="tab-btn">Booking</a>
 
                 <button th:if="${currentUser.role.toString() == 'MANAGER'}" data-target="admin-view" id="nav-admin-link" class="tab-btn">Admin Panel</button>
             </div>
 
             <span id="user-info" class="text-sm text-gray-600 font-medium sm:inline"
-                  th:text="${currentUser.name} + ' (' + ${currentUser.role} + ')'">
+                th:text="${currentUser.name} + ' (' + ${currentUser.role} + ')'">
                 User Name (Role)
             </span>
         </div>
@@ -163,8 +163,8 @@
         <div id="student-dashboard" th:if="${currentUser.role.toString() == 'STUDENT'}">
 
             <div id="active-booking-card" th:if="${activeBooking != null}"
-                 class="card !bg-blue-600 text-white mb-8 hover:!bg-blue-700 transition-all cursor-pointer"
-                 onclick="window.location.href='/timer'">
+                class="card !bg-blue-600 text-white mb-8 hover:!bg-blue-700 transition-all cursor-pointer"
+                onclick="window.location.href='/timer'">
                 
                 <h3 class="text-xl font-semibold mb-2">You have 1 active session!</h3>
                 <div class="flex justify-between items-center border-t border-blue-400 pt-3">
@@ -185,7 +185,7 @@
                 </div>
                 
                 <div th:unless="${#lists.isEmpty(studentBookings)}" th:each="booking : ${studentBookings}"
-                     class="card flex justify-between items-center">
+                    class="card flex justify-between items-center">
                     <div>
                         <p class="font-bold text-gray-900" th:text="${booking.machine.machineNumber}">Washer 1</p>
                         <p class="text-sm text-gray-600" th:text="'Slot Time: ' + ${#temporals.format(booking.bookingDate, 'dd MMM yyyy, HH:mm')}">Slot Time: 2025-11-03 10:00</p>
@@ -208,7 +208,7 @@
 
             <p class="mt-8 text-center">
                 <a th:href="@{/student/{studentId}/booking(studentId=${currentUser.studentId})}"
-                   class="primary-btn">Go to Booking Page</a>
+                    class="primary-btn">Go to Booking Page</a>
             </p>
         </div>
 
@@ -218,7 +218,7 @@
                 <div class="card !bg-blue-500 text-white"><p class="text-sm opacity-80">Total Machines</p><p class="text-3xl font-bold mt-1" th:text="${managerStats.totalMachines}">0</p></div>
                 <div class="card !bg-emerald-500 text-white"><p class="text-sm opacity-80">Machines Available</p><p class="text-3xl font-bold mt-1" th:text="${managerStats.availableMachines}">0</p></div>
                 <div class="card !bg-amber-500 text-white"><p class="text-sm opacity-80">Machines In Use</p><p class="text-3xl font-bold mt-1" th:text="${managerStats.inUseMachines}">0</p></div>
-                <div class="card !bg-red-500 text-white"><p class="text-sm opacity-80">Maintenance / Offline</p><p class="text-3xl font-bold mt-1" th:text="${managerStats.maintenanceMachines}">0</p></div>
+                <div class="card !bg-red-500 text-white"><p class="text-sm opacity-80">Offline</p><p class="text-3xl font-bold mt-1" th:text="${managerStats.maintenanceMachines}">0</p></div>
             </div>
             
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
@@ -229,10 +229,10 @@
                             <p class="text-gray-500">No recent activity found.</p>
                         </div>
                         <div th:unless="${#lists.isEmpty(recentActivities)}" th:each="booking : ${recentActivities}"
-                             class="flex items-center justify-between p-3 border-b hover:bg-gray-50 rounded-lg">
+                            class="flex items-center justify-between p-3 border-b hover:bg-gray-50 rounded-lg">
                             <div class="flex items-center space-x-3">
                                 <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold"
-                                     th:text="${booking.getCustomerInitial()}">?</div>
+                                    th:text="${booking.getCustomerInitial()}">?</div>
                                 <div>
                                     <p class="font-bold text-gray-900">
                                         <span th:text="${booking.user.name}">User Name</span>
@@ -293,18 +293,24 @@
                     <div class="flex-grow">
                         <p class="font-bold" th:text="${machine.name} + ' (' + ${machine.machineNumber} + ')'">Washer 1 (001)</p>
                         <p class="text-sm"
-                           th:text="'Current: ' + ${machine.status}"
-                           th:classappend="${machine.status == 'AVAILABLE' ? 'text-emerald-600' : 'text-red-600'}">
+                            th:text="'Current: ' + ${machine.status}"
+                            th:classappend="${machine.status == 'AVAILABLE' ? 'text-emerald-600' : 'text-red-600'}">
                             Current: Status
                         </p>
                     </div>
                     <div class="flex items-center">
                         <select th:data-id="${machine.id}" class="machine-status-select border border-gray-300 rounded-md p-1 text-sm mr-4 w-40">
-                            <option th:each="status : ${allStatuses}"
-                                    th:value="${status}"
-                                    th:text="${status}"
-                                    th:selected="${status == machine.status}">
-                                Status
+                            <option
+                                    th:value="'AVAILABLE'"
+                                    th:text="'AVAILABLE'"
+                                    th:selected="${'AVAILABLE' == machine.status}">
+                                AVAILABLE
+                            </option>
+                            <option
+                                    th:value="'OUT_OF_SERVICE'"
+                                    th:text="'OUT_OF_SERVICE'"
+                                    th:selected="${'OUT_OF_SERVICE' == machine.status}">
+                                OUT_OF_SERVICE
                             </option>
                         </select>
                         <button th:data-id="${machine.id}" class="update-machine-btn primary-btn">Update</button>
@@ -399,7 +405,8 @@
         let hasAvailableMachines = false;
 
         allMachines.forEach(machine => {
-            if (machine.status === 'MAINTENANCE' || machine.status === 'OUT_OF_SERVICE') { return; }
+            // Exclude only OUT_OF_SERVICE machines from the schedule list
+            if (machine.status === 'OUT_OF_SERVICE') { return; }
             hasAvailableMachines = true;
             let slotButtonsHTML = "";
 
@@ -410,8 +417,8 @@
 
                 let userName = "Unknown";
                 if (booking && booking.user) {
-                       userName = booking.user.name;
-                       if(booking.user.id === currentManager.id) userName = "ADMIN BLOCK";
+                        userName = booking.user.name;
+                        if(booking.user.id === currentManager.id) userName = "ADMIN BLOCK";
                 }
 
                 if (booking) {
@@ -423,11 +430,11 @@
                                 <div class="text-xs font-bold text-yellow-800 mb-1">${slotTime}</div>
                                 <div class="text-xs text-gray-600 mb-2 truncate">${userName}</div>
                                 <div class="flex justify-center space-x-1">
-                                    <button class="mini-action-btn bg-green-500 hover:bg-green-600 btn-approve-booking" 
+                                    <button class="mini-action-btn bg-green-500 hover:bg-green-600 btn-approve-booking"
                                             data-booking-id="${booking.id}" title="confirm">
                                         ✓ confirm
                                     </button>
-                                    <button class="mini-action-btn bg-red-500 hover:bg-red-600 btn-reject-booking" 
+                                    <button class="mini-action-btn bg-red-500 hover:bg-red-600 btn-reject-booking"
                                             data-booking-id="${booking.id}" title="cancle">
                                         ✕ cancle
                                     </button>
@@ -439,7 +446,7 @@
                         slotButtonsHTML += `
                             <div class="text-center">
                                 <span class="text-xs font-semibold text-gray-700">${slotTime}</span>
-                                <button class="admin-slot-btn admin-btn-taken w-full mt-1 btn-cancel-booking" 
+                                <button class="admin-slot-btn admin-btn-taken w-full mt-1 btn-cancel-booking"
                                         data-booking-id="${booking.id}">
                                     IN USE: ${userName}
                                 </button>
@@ -451,7 +458,7 @@
                     slotButtonsHTML += `
                         <div class="text-center">
                             <span class="text-xs font-semibold text-gray-700">${slotTime}</span>
-                            <button class="admin-slot-btn admin-btn-available w-full mt-1 btn-block-slot" 
+                            <button class="admin-slot-btn admin-btn-available w-full mt-1 btn-block-slot"
                                     data-machine-id="${machine.id}"
                                     data-slot-time="${isoSlotTime}">
                                 AVAILABLE
@@ -473,7 +480,7 @@
         });
 
         if (!hasAvailableMachines) {
-            $list.html('<p class="text-gray-500">All machines are currently under maintenance or out of service.</p>');
+            $list.html('<p class="text-gray-500">All machines are currently out of service.</p>');
         }
     }
 
@@ -498,10 +505,9 @@
                 const index = todaysBookings.findIndex(b => b.id === bookingId);
                 if (index > -1) {
                     
-                    // --- (FIXED - This logic was updated but let's make it correct) ---
                     // The 'updatedBooking' response has 'status' which is the BookingStatus object
                     // So we can just assign it directly.
-                    todaysBookings[index].status = updatedBooking.status; 
+                    todaysBookings[index].status = updatedBooking.status;
                 }
                 renderAdminSchedule();
             },
@@ -510,12 +516,12 @@
                 // แม้จะ Error แต่ถ้าสถานะเปลี่ยนไปแล้วจริงๆ (เช่น 200 OK แต่ JSON ผิดพลาด)
                 // เราอาจจะลองรีโหลดหน้านี้ดู
                 if (xhr.status === 200) {
-                     showMessage('อนุมัติสำเร็จ (โปรดรีโหลดหน้าจอหากข้อมูลไม่ตรง)', 'success');
-                     setTimeout(() => window.location.reload(), 1500);
+                    showMessage('อนุมัติสำเร็จ (โปรดรีโหลดหน้าจอหากข้อมูลไม่ตรง)', 'success');
+                    setTimeout(() => window.location.reload(), 1500);
                 } else {
-                     const errorMsg = xhr.responseJSON ? (xhr.responseJSON.message || xhr.responseJSON.error) : 'เกิดข้อผิดพลาดในการอนุมัติ';
-                     showMessage(errorMsg, 'error');
-                     $btn.prop('disabled', false).text('✓ ตกลง');
+                    const errorMsg = xhr.responseJSON ? (xhr.responseJSON.message || xhr.responseJSON.error) : 'เกิดข้อผิดพลาดในการอนุมัติ';
+                    showMessage(errorMsg, 'error');
+                    $btn.prop('disabled', false).text('✓ ตกลง');
                 }
             }
         });
@@ -556,9 +562,9 @@
         $btn.text('...').prop('disabled', true);
 
         const bookingData = {
-            user: { id: currentManager.id }, 
-            machine: { id: machineId }, 
-            bookingDate: slotTime, 
+            user: { id: currentManager.id },
+            machine: { id: machineId },
+            bookingDate: slotTime,
             amount: 0.0,
             service: "ADMIN_BLOCK",
             
