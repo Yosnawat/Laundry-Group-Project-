@@ -2,17 +2,23 @@ ALMOST DONE(DEBUGGING)
 -
 -
 FIX THESE:
-1. RATING - YOU CAN't PRESS OK FOR SOME REASON
-2. booked - After a student finished booking a section, turn the section to USED after the student submitted rating. DO NOT ALLOW FOR ANOTHER BOOKING. KEEP LIKE THIS FOREVER.
+1. cannot write review
+<img width="626" height="695" alt="image" src="https://github.com/user-attachments/assets/c72d4082-d82a-4114-9190-38dcee4aa3d6" /> 
+<img width="1409" height="932" alt="image" src="https://github.com/user-attachments/assets/273912f6-ce33-4bc5-a008-0547532edc47" />
 
-<img width="213" height="136" alt="image" src="https://github.com/user-attachments/assets/760e73d9-9356-439e-a3f2-31fdc10cab84" />
+2. ADMIN BLOCK CANNOT (CONFIRM/CANCEL)
 
+3. CANNOT BOOK TWICE IN A ROW
+4. <img width="160" height="75" alt="image" src="https://github.com/user-attachments/assets/fbba7f20-16bf-4bd1-a319-70718e74f746" />
 
-3. MACHINE PAGE: Review is not working. Stars are N/A.
-4. ADD A new feature for admin so that they can edit machine page.
-5. Remove maintenance. It does the same thing as OUT_OF_Service
- <img width="1146" height="752" alt="image" src="https://github.com/user-attachments/assets/1d70a019-8af5-451a-985f-892e0f019e29" />
+5.name and upcoming bookings
+ <img width="1313" height="803" alt="image" src="https://github.com/user-attachments/assets/25b59f11-60a2-4f17-b606-8b7185f4d643" />
 
+6.When student is booking, and manager change to out of status decline since there is booking
+
+7. Add recent reviews to be shown after the reviews
+
+8. Let admin access the machine page too
 
 
 PLEASE REFERENCE TO **LaundryManagementSystem.pdf** DONT JUST PUT EVERYTHING IN AI!
@@ -30,6 +36,7 @@ DATBASE DOCUMENT: https://docs.google.com/document/d/1wJjGdGH5b7nIplDi8Lw9mYiGuk
 (I WORK ON THIS)
 
 1/2 person WORK ON UPLOADING THIS TO GOOGLE CLOUD!!!!
+
 
 
 
