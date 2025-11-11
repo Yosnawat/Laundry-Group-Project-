@@ -288,8 +288,8 @@ $(document).ready(function() {
 
     // --- 3. (อัปเกรด) สร้างฟังก์ชัน Close กลาง ---
     function closeModal() {
-        $modal.addClass('hidden');
-        
+       // $modal.addClass('hidden');
+        $modal.stop(true, true).fadeOut(150).attr('aria-hidden', 'true');
         // (สำคัญ) เคลียร์ timer เสมอ ถ้ามีการกดปิดเอง
         if (autoCloseTimer) {
             clearTimeout(autoCloseTimer);
