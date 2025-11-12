@@ -122,8 +122,15 @@ public class BookingService {
 
         // --- (FIX FOR ISSUE #3: Check if user already has active bookings) ---
         // Prevent users from booking twice in a row
-        boolean hasPendingBooking = !bookingRepository.findByUserIdAndStatus_Name(userId, "PENDING").isEmpty();
-        boolean hasInProgressBooking = !bookingRepository.findByUserIdAndStatus_Name(userId, "IN_PROGRESS").isEmpty();
+        // Only check for bookings that are in the future (not past dates)
+        LocalDateTime now = LocalDateTime.now();
+        List<Booking> pendingBookings = bookingRepository.findByUserIdAndStatus_Name(userId, "PENDING");
+        List<Booking> inProgressBookings = bookingRepository.findByUserIdAndStatus_Name(userId, "IN_PROGRESS");
+        
+        boolean hasPendingBooking = pendingBookings.stream()
+            .anyMatch(b -> b.getBookingDate() != null && b.getBookingDate().isAfter(now));
+        boolean hasInProgressBooking = inProgressBookings.stream()
+            .anyMatch(b -> b.getBookingDate() != null && b.getBookingDate().isAfter(now));
         
         // Only check for regular bookings, not admin blocks
         if (!("ADMIN_BLOCK".equals(bookingRequest.getService()))) {

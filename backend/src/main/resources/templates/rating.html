@@ -414,8 +414,10 @@ $(document).ready(function() {
         .then(response => {
             if (!response.ok) {
                 return response.json().then(err => {
-                    throw new Error(err.error || 'Server returned an error');
-                }).catch(() => {
+                    console.log('Server error response:', err);
+                    throw new Error(err.error || 'Server returned status ' + response.status);
+                }).catch(parseErr => {
+                    console.log('Could not parse error, status:', response.status);
                     throw new Error('Server error: ' + response.status);
                 });
             }
@@ -437,18 +439,21 @@ $(document).ready(function() {
             );
             // ----------------------------------------------------
 
-            // (อัปเกรด) ซ่อน Modal หลังจาก 2 วินาที โดยใช้ฟังก์ชันใหม่
+            // (อัปเกรด) ซ่อน Modal และรีเฟรชหน้า หลังจาก 2 วินาที
             autoCloseTimer = setTimeout(() => {
                 if (!$modal.hasClass('hidden')) { // ตรวจสอบว่ายังไม่ปิดไปก่อน
                     closeModal();
                 }
+                // Reload page to refresh data
+                location.reload();
             }, 2000); // 2 วินาที
             
         })
         .catch(error => {
             // (อัปเกรด) ล้มเหลว
             console.error('Error submitting rating:', error);
-            alert('เกิดข้อผิดพลาด: ' + error.message);
+            console.log('Request payload:', payload);
+            alert('Error: ' + error.message + '\n\nPlease try again or contact support.');
             
             // คืนค่าปุ่มให้กดใหม่ได้ แต่ *ไม่ต้องปิด* Modal
             $submitBtn.prop('disabled', false).text(originalText);
