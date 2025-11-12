@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable; // Import this
 
 import model.Booking;
+import model.Rating;
 import model.User; // Import this
+import repo.RatingRepository;
 import service.BookingService; // This import is still correct (now imports the entity)
 import service.MachineManagementService;
 import service.UserService; 
@@ -24,7 +26,10 @@ public class ViewController {
     private UserService userService;
 
     @Autowired
-    private MachineManagementService machineManagementService; 
+    private MachineManagementService machineManagementService;
+    
+    @Autowired
+    private RatingRepository ratingRepository; 
 
     @GetMapping("/")
     public String home() {
@@ -91,6 +96,10 @@ public class ViewController {
 
         model.addAttribute("upcomingBookings", upcoming);
         model.addAttribute("completedHistory", completed);
+        
+        // Issue #7: Add recent reviews from the system
+        List<Rating> recentReviews = ratingRepository.findRecentRatings();
+        model.addAttribute("recentReviews", recentReviews);
         
         // Render the rating.html template
         return "rating";

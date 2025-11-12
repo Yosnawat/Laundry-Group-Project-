@@ -73,24 +73,11 @@
                         High-efficiency front-load washer with steam cycle for deep cleaning.
                     </p>
                 </div>
-
-                <a th:if="${machine.status == 'AVAILABLE' and currentUser != null and currentUser.role.toString() != 'MANAGER'}"
-                   th:href="@{/student/{uid}/booking?machineId={mid}(uid=${currentUser.studentId}, mid=${machine.id})}"
-                   class="block w-full py-4 bg-blue-600 hover:bg-blue-700 text-white text-center font-bold rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                    Book This Machine Now
-                </a>
-                
                 <button th:if="${currentUser != null and currentUser.role.toString() == 'MANAGER'}"
                         onclick="openEditModal()"
                         class="block w-full py-4 bg-purple-600 hover:bg-purple-700 text-white text-center font-bold rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                    Edit Machine Details (Admin)
+                    Edit Machine Details (Manager)
                 </button>
-                
-                <button th:if="${machine.status != 'AVAILABLE' and (currentUser == null or currentUser.role.toString() != 'MANAGER')}" disabled
-                        class="block w-full py-4 bg-gray-300 text-gray-500 text-center font-bold rounded-xl cursor-not-allowed">
-                    Currently Unavailable
-                </button>
-
                 <div class="mt-10 pt-8 border-t">
                     <h3 class="text-lg font-bold text-gray-800 mb-4">Recent Reviews</h3>
                     <div class="space-y-4 max-h-64 overflow-y-auto pr-2">
@@ -103,7 +90,7 @@
                                 </div>
                             </div>
                             <p class="text-gray-600 text-sm italic" th:text="|&quot;${review.reviewText}&quot;|">"Great machine!"</p>
-                            <p class="text-xs text-gray-400 mt-2" th:text="${#temporals.format(review.createdAt, 'dd MMM yyyy')}">Date</p>
+                            <p class="text-xs text-gray-400 mt-2" th:text="${review.formattedCreatedAt}"></span>
                         </div>
                         <p th:if="${#lists.isEmpty(recentReviews)}" class="text-gray-500 text-sm italic">No reviews yet.</p>
                     </div>

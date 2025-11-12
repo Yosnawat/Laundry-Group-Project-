@@ -159,54 +159,37 @@
                 <a id="nav-booking" th:href="@{/student/{id}/booking(id=${student.id})}" class="tab-btn">Booking</a>
             </div>
             <span id="user-info" class="text-sm text-gray-600 font-medium sm:inline"
-                  th:text="${student.name + ' (' + student.id + ')'}">Wacharaphong (6731503032)</span>
+                  th:text="${student.name + ' (' + student.id + ')'}"> User Name </span>
         </div>
     </nav>
-
-    <div id="dashboard-view" class="view">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Upcoming Bookings</h2>
+    <!-- Issue #7: Add recent reviews section -->
+    <div id="recent-reviews-view" class="mt-8 p-6 border-t border-gray-200">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">Recent Reviews</h2>
         
-        <div id="upcoming-list" class="mb-8 space-y-4">
-            <div th:each="booking : ${upcomingBookings}" class="history-item">
-                <span class="history-details">
-                    <strong th:text="${booking.machine.name}">เครื่องอบผ้า B-01</strong>
-                    | <span th:text="${booking.formattedSlot}">3 พ.ย. 2025 (18:00 - 19:00)</span>
-                    | <span class="font-bold text-blue-600">Upcoming</span>
-                </span>
+        <div id="reviews-list" class="space-y-4">
+            <div th:each="review : ${recentReviews}" class="card bg-white border border-gray-200 p-4 rounded-lg">
+                <div class="flex justify-between items-start mb-2">
+                    <div class="flex-1">
+                        <p class="font-semibold text-gray-800">
+                            <strong th:text="${review.booking.machine.name}">Machine Name</strong>
+                        </p>
+                        <p class="text-sm text-gray-600">
+                            by <span th:text="${review.user.name}">User Name</span>
+                            on <span th:text="${#temporals.format(review.createdAt, 'd MMM yyyy')}">date</span>
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xl text-yellow-500" th:text="${#strings.repeat('★', review.rating)}"></span>
+                        <span class="text-xl text-gray-300" th:if="${review.rating < 5}" th:text="${#strings.repeat('★', 5 - review.rating)}"></span>
+                    </div>
+                </div>
+                <p th:if="${review.reviewText}" class="text-gray-700 text-sm mt-2" th:text="${review.reviewText}">Review text here</p>
+                <p th:if="${#strings.isEmpty(review.reviewText)}" class="text-gray-400 text-sm italic">No additional comments</p>
             </div>
-            <div th:if="${#lists.isEmpty(upcomingBookings)}" class="text-gray-500 text-center py-4">
-                No upcoming bookings.
-            </div>
-        </div>
-
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">Completed History</h2>
-        
-        <div id="history-list" class="space-y-4">
             
-            <div th:each="booking : ${completedHistory}" class="history-item">
-                <span class="history-details">
-                    <strong th:text="${booking.machine.name}">เครื่องซักผ้า A-05</strong>
-                    | <span th:text="${booking.formattedSlot}">3 พ.ย. 2025 (14:00 - 15:00)</span>
-                    | <span class="text-green-600">เสร็จสิ้น</span>
-                </span>
-                
-                <a th:if="${booking.rating == null}" 
-                   class="rate-btn"
-                   th:data-booking-id="${booking.id}"
-                   th:data-machine-name="${booking.machine.name}">
-                   [ให้คะแนน]
-                </a>
-                
-                <span th:if="${booking.rating != null}" class="rated-text">
-                    คุณให้คะแนนแล้ว 
-                    <span class="rated-stars" th:text="${#strings.repeat('★', booking.rating)}"></span>
-                    <span class="unrated-stars" th:if="${booking.rating < 5}" th:text="${#strings.repeat('★', 5 - booking.rating)}"></span>
-                </span>
+            <div th:if="${#lists.isEmpty(recentReviews)}" class="text-gray-500 text-center py-8">
+                <p>No reviews available yet. Be the first to review!</p>
             </div>
-            <div th:if="${#lists.isEmpty(completedHistory)}" class="text-gray-500 text-center py-4">
-                No completed bookings found.
-            </div>
-
         </div>
     </div>
 </div>
@@ -235,7 +218,7 @@
                     <p id="rating-error" class="text-red-500 text-sm mt-2 hidden">Please select at least one star.</p>
                 </div>
 
-                <div class.="mb-6">
+                <div class="mb-6">
                     <label for="comments" class="block text-sm font-medium text-gray-700 text-left mb-2">Additional Comments (Optional)</label>
                     <textarea id="comments" name="comments" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm" placeholder="The machine was clean, fast, etc."></textarea>
                 </div>
@@ -399,8 +382,10 @@ $(document).ready(function() {
         .then(response => {
             if (!response.ok) {
                 return response.json().then(err => {
-                    throw new Error(err.error || 'Server returned an error');
-                }).catch(() => {
+                    console.log('Server error response:', err);
+                    throw new Error(err.error || 'Server returned status ' + response.status);
+                }).catch(parseErr => {
+                    console.log('Could not parse error, status:', response.status);
                     throw new Error('Server error: ' + response.status);
                 });
             }
@@ -422,18 +407,21 @@ $(document).ready(function() {
             );
             // ----------------------------------------------------
 
-            // (อัปเกรด) ซ่อน Modal หลังจาก 2 วินาที โดยใช้ฟังก์ชันใหม่
+            // (อัปเกรด) ซ่อน Modal และรีเฟรชหน้า หลังจาก 2 วินาที
             autoCloseTimer = setTimeout(() => {
                 if (!$modal.hasClass('hidden')) { // ตรวจสอบว่ายังไม่ปิดไปก่อน
                     closeModal();
                 }
+                // Reload page to refresh data
+                location.reload();
             }, 2000); // 2 วินาที
             
         })
         .catch(error => {
             // (อัปเกรด) ล้มเหลว
             console.error('Error submitting rating:', error);
-            alert('เกิดข้อผิดพลาด: ' + error.message);
+            console.log('Request payload:', payload);
+            alert('Error: ' + error.message + '\n\nPlease try again or contact support.');
             
             // คืนค่าปุ่มให้กดใหม่ได้ แต่ *ไม่ต้องปิด* Modal
             $submitBtn.prop('disabled', false).text(originalText);

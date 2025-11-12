@@ -1,5 +1,6 @@
 package controller;
-
+import java.time.LocalDateTime; // หรือ java.util.Date ขึ้นอยู่กับโมเดล Rating ของคุณ
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -136,7 +137,14 @@ public class MachineDetailDTO {
         private Integer rating;
         private String reviewText;
         private String userName;
-        private String createdAt;
+        
+        // --- ส่วนที่แก้ไข ---
+        // เราจะเปลี่ยนชื่อ field นี้ให้ตรงกับที่ Thymeleaf เรียกใช้
+        private String formattedCreatedAt; 
+
+        // สร้างตัวจัดรูปแบบ (Formatter)
+        // คุณสามารถเปลี่ยน 'dd/MM/yyyy HH:mm' เป็นรูปแบบอื่นที่ต้องการได้
+        private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy 'at' HH:mm");
 
         public RatingReviewDTO() {
         }
@@ -146,7 +154,16 @@ public class MachineDetailDTO {
             this.rating = rating.getRating();
             this.reviewText = rating.getReviewText();
             this.userName = rating.getUser() != null ? rating.getUser().getName() : "Anonymous";
-            this.createdAt = rating.getCreatedAt() != null ? rating.getCreatedAt().toString() : null;
+            
+            // --- ส่วนที่แก้ไข ---
+            // ตรวจสอบว่า createdAt ไม่ null
+            if (rating.getCreatedAt() != null) {
+                // สมมติว่า rating.getCreatedAt() คืนค่าเป็น LocalDateTime
+                // ถ้าเป็น java.util.Date ให้ใช้วิธีอื่น
+                this.formattedCreatedAt = rating.getCreatedAt().format(formatter);
+            } else {
+                this.formattedCreatedAt = null; // หรือ "N/A"
+            }
         }
 
         // Getters and Setters
@@ -162,7 +179,9 @@ public class MachineDetailDTO {
         public String getUserName() { return userName; }
         public void setUserName(String userName) { this.userName = userName; }
 
-        public String getCreatedAt() { return createdAt; }
-        public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+        // --- ส่วนที่แก้ไข ---
+        /// เปลี่ยน Getter/Setter ให้ตรงกับชื่อ field ใหม่
+        public String getFormattedCreatedAt() { return formattedCreatedAt; }
+        public void setFormattedCreatedAt(String formattedCreatedAt) { this.formattedCreatedAt = formattedCreatedAt; }
     }
 }

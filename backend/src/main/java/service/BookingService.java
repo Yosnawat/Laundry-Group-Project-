@@ -91,6 +91,10 @@ public class BookingService {
      * Creates a new booking with validation.
      * We can't save the 'booking' object from the request directly.
      * We must build a new, managed entity.
+     * 
+     * IMPROVEMENTS:
+     * - Issue #2: Support admin block creation with CONFIRMED status
+     * - Issue #3: Prevent users from booking if they already have active bookings
      */
     @Transactional
     public Booking createBooking(Booking bookingRequest) {
@@ -116,6 +120,26 @@ public class BookingService {
         Machine machine = machineRepository.findById(machineId)
                 .orElseThrow(() -> new IllegalArgumentException("Machine not found with ID: " + machineId));
 
+        // --- (FIX FOR ISSUE #3: Check if user already has active bookings) ---
+        // Prevent users from booking twice in a row
+        // Only check for bookings that are in the future (not past dates)
+        LocalDateTime now = LocalDateTime.now();
+        List<Booking> pendingBookings = bookingRepository.findByUserIdAndStatus_Name(userId, "PENDING");
+        List<Booking> inProgressBookings = bookingRepository.findByUserIdAndStatus_Name(userId, "IN_PROGRESS");
+        
+        boolean hasPendingBooking = pendingBookings.stream()
+            .anyMatch(b -> b.getBookingDate() != null && b.getBookingDate().isAfter(now));
+        boolean hasInProgressBooking = inProgressBookings.stream()
+            .anyMatch(b -> b.getBookingDate() != null && b.getBookingDate().isAfter(now));
+        
+        // Only check for regular bookings, not admin blocks
+        if (!("ADMIN_BLOCK".equals(bookingRequest.getService()))) {
+            if (hasPendingBooking || hasInProgressBooking) {
+                throw new IllegalStateException("You already have an active booking. Please complete or cancel it first.");
+            }
+        }
+        // --- (END OF FIX FOR ISSUE #3) ---
+
         // 3. Check for conflicts
         boolean isSlotTaken = bookingRepository.existsActiveBookingForMachineAtTime(
                 machineId,
@@ -133,9 +157,16 @@ public class BookingService {
         newBooking.setAmount(bookingRequest.getAmount());
         newBooking.setService(bookingRequest.getService());
 
-        // 5. Create the default status
-        BookingStatus defaultStatus = new BookingStatus("PENDING", "Pending");
-        newBooking.setStatus(defaultStatus);
+        // --- (FIX FOR ISSUE #2: Handle admin block status) ---
+        // Admin blocks should be created with CONFIRMED status immediately
+        BookingStatus status;
+        if ("ADMIN_BLOCK".equals(bookingRequest.getService())) {
+            status = new BookingStatus("CONFIRMED", "Confirmed");
+        } else {
+            status = new BookingStatus("PENDING", "Pending");
+        }
+        newBooking.setStatus(status);
+        // --- (END OF FIX FOR ISSUE #2) ---
         
         // 6. Save the new, fully managed entity
         return bookingRepository.save(newBooking);
