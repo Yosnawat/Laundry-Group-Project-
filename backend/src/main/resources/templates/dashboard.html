@@ -167,6 +167,11 @@
                    class="tab-btn">Booking</a>
 
                 <button th:if="${currentUser.role.toString() == 'MANAGER'}" data-target="admin-view" id="nav-admin-link" class="tab-btn">Admin Panel</button>
+                
+                <!-- Issue #8: Allow admin to access machine page -->
+                <a th:if="${currentUser.role.toString() == 'MANAGER'}"
+                   href="/machine/1"
+                   class="tab-btn">Machines</a>
             </div>
 
             <span id="user-info" class="text-sm text-gray-600 font-medium sm:inline"
