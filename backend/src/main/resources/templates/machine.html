@@ -74,7 +74,7 @@
                     </p>
                 </div>
 
-                <a th:if="${machine.status == 'AVAILABLE' and currentUser != null and currentUser.role.toString() != 'MANAGER'}"
+                <a th:if="${machine.status == 'AVAILABLE' and currentUser != null}"
                    th:href="@{/student/{uid}/booking?machineId={mid}(uid=${currentUser.studentId}, mid=${machine.id})}"
                    class="block w-full py-4 bg-blue-600 hover:bg-blue-700 text-white text-center font-bold rounded-xl transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-1">
                     Book This Machine Now
