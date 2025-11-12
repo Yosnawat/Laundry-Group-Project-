@@ -216,7 +216,7 @@
                     </div>
                 </div>
                 <p th:if="${review.reviewText}" class="text-gray-700 text-sm mt-2" th:text="${review.reviewText}">Review text here</p>
-                <p th:if="${!review.reviewText}" class="text-gray-400 text-sm italic">No additional comments</p>
+                <p th:if="${#strings.isEmpty(review.reviewText)}" class="text-gray-400 text-sm italic">No additional comments</p>
             </div>
             
             <div th:if="${#lists.isEmpty(recentReviews)}" class="text-gray-500 text-center py-8">
