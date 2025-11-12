@@ -170,7 +170,7 @@
                 
                 <!-- Issue #8: Allow admin to access machine page -->
                 <a th:if="${currentUser.role.toString() == 'MANAGER'}"
-                   href="/machine/1"
+                   th:href="@{/machine/{id}(id=${allMachines[0].id})}"
                    class="tab-btn">Machines</a>
             </div>
 
