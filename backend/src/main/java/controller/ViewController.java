@@ -89,7 +89,7 @@ public class ViewController {
 
         // This line fixes your "student.id" error
         model.addAttribute("student", currentUser);
-
+        model.addAttribute("currentUser", currentUser);
         // Your rating.html page (copied from dashboard) needs this data
         List<Booking> upcoming = bookingService.getBookingsByUserId(currentUser.getId()); 
         List<Booking> completed = bookingService.getCompletedBookingsForRating(currentUser.getId());

@@ -159,7 +159,9 @@
                 <a id="nav-booking" th:href="@{/student/{id}/booking(id=${student.id})}" class="tab-btn">Booking</a>
             </div>
             <span id="user-info" class="text-sm text-gray-600 font-medium sm:inline"
-                  th:text="${student.name + ' (' + student.id + ')'}"> User Name </span>
+                  th:text="${currentUser.name} + ' (' + ${currentUser.role} + ')'">
+                User Name (Role)
+            </span>
         </div>
     </nav>
     <!-- Issue #7: Add recent reviews section -->
@@ -174,7 +176,7 @@
                             <strong th:text="${review.booking.machine.name}">Machine Name</strong>
                         </p>
                         <p class="text-sm text-gray-600">
-                            by <span th:text="${review.user.name}">User Name</span>
+                            Review by <span th:text="${review.user.name}">User Name</span>
                             on <span th:text="${#temporals.format(review.createdAt, 'd MMM yyyy')}">date</span>
                         </p>
                     </div>
