@@ -52,7 +52,7 @@
                             <div><span class="text-gray-500">Brand:</span> <span class="font-medium" th:text="${machine.brand ?: 'N/A'}">Samsung</span></div>
                             <div><span class="text-gray-500">Model:</span> <span class="font-medium" th:text="${machine.model ?: 'N/A'}">WF-5000</span></div>
                             <div><span class="text-gray-500">Type:</span> <span class="font-medium" th:text="${machine.machineType}">WASHER</span></div>
-                            <div><span class="text-gray-500">Capacity:</span> <span class="font-medium" th:text="${machine.capacity != null ? machine.capacity + ' kg' : 'N/A'}">10 kg</span></div>
+                            <div><span class="text-gray-500">Capacity:</span> <span class="font-medium" th:text="${machine.capacity != null ? (#strings.containsIgnoreCase(machine.capacity, 'kg') ? machine.capacity : machine.capacity + ' kg') : 'N/A'}">10 kg</span></div>
                         </div>
                     </div>
                     
