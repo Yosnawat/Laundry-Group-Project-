@@ -159,7 +159,7 @@
                 <a id="nav-booking" th:href="@{/student/{id}/booking(id=${student.id})}" class="tab-btn">Booking</a>
             </div>
             <span id="user-info" class="text-sm text-gray-600 font-medium sm:inline"
-                  th:text="${student.name + ' (' + student.id + ')'}"> User Name (Role)</span>
+                  th:text="${student.name + ' (' + student.id + ')'}"> User Name </span>
         </div>
     </nav>
 
@@ -174,7 +174,6 @@
                     | <span th:text="${booking.formattedSlot}">3 พ.ย. 2025 (14:00 - 15:00)</span>
                     | <span class="text-green-600">เสร็จสิ้น</span>
                 </span>
-                
                 <a th:if="${booking.rating == null}" 
                    class="rate-btn"
                    th:data-booking-id="${booking.id}"
