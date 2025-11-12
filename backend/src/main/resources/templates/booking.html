@@ -96,62 +96,19 @@
             border-color: #3b82f6;
             color: #2563eb;
         }
+        /* --- CSS for taken slots --- */
         .slot-button-taken {
-            background-color: #f3f4f6;
-            border: 1px solid #e5e7eb;
-            color: #9ca3af;
+            background-color: #f3f4f6; /* gray-100 */
+            border: 1px solid #e5e7eb; /* gray-200 */
+            color: #9ca3af; /* gray-400 */
             padding: 0.5rem;
             border-radius: 0.375rem;
             font-weight: 500;
             font-size: 0.875rem;
             text-align: center;
             cursor: not-allowed;
-            text-decoration: line-through;
+            text-decoration: line-through; /* Strikethrough */
         }
-        
-        /* Status Badge Styles */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.375rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.875rem;
-            font-weight: 600;
-        }
-        .status-available {
-            background-color: #d1fae5;
-            color: #065f46;
-        }
-        .status-booked {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-        .status-in-use {
-            background-color: #dbeafe;
-            color: #1e40af;
-        }
-        .status-finished {
-            background-color: #e9d5ff;
-            color: #6b21a8;
-        }
-        .status-overdue {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-        
-        /* Status Indicator Dot */
-        .status-dot {
-            width: 0.5rem;
-            height: 0.5rem;
-            border-radius: 9999px;
-            display: inline-block;
-        }
-        .dot-available { background-color: #10b981; }
-        .dot-booked { background-color: #f59e0b; }
-        .dot-in-use { background-color: #3b82f6; }
-        .dot-finished { background-color: #a855f7; }
-        .dot-overdue { background-color: #ef4444; }
     </style>
 </head>
 
@@ -313,93 +270,6 @@
         });
     }
 
-    // --- MACHINE STATUS CALCULATION ---
-    function getMachineStatus(machine, bookingsForMachine) {
-        if (!bookingsForMachine || bookingsForMachine.length === 0) {
-            return { status: 'AVAILABLE', label: 'Available', activeBooking: null };
-        }
-
-        const now = new Date();
-        
-        // Find the most relevant booking for this machine
-        for (let booking of bookingsForMachine) {
-            const bookingDate = new Date(booking.bookingDate);
-            const startTime = new Date(booking.startTime);
-            const endTime = new Date(booking.endTime);
-            
-            // Calculate 30 minutes after end time for overdue check
-            const overdueThreshold = new Date(endTime.getTime() + 30 * 60 * 1000);
-            
-            // Check each status in priority order
-            
-            // 1. OVERDUE: More than 30 minutes past end time and not cleared
-            if (now > overdueThreshold && booking.status !== 'COMPLETED' && booking.status !== 'CANCELLED') {
-                return { status: 'OVERDUE', label: 'Overdue - Admin Required', activeBooking: booking };
-            }
-            
-            // 2. FINISHED: Between end time and 30 minutes after
-            if (now >= endTime && now <= overdueThreshold && booking.status !== 'COMPLETED' && booking.status !== 'CANCELLED') {
-                return { status: 'FINISHED', label: 'Finished - Waiting Pickup', activeBooking: booking };
-            }
-            
-            // 3. IN_USE: Between start and end time
-            if (now >= startTime && now < endTime && booking.status === 'CONFIRMED') {
-                return { status: 'IN_USE', label: 'In Use', activeBooking: booking };
-            }
-            
-            // 4. BOOKED: Before start time but booking exists
-            if (now < startTime && (booking.status === 'PENDING' || booking.status === 'CONFIRMED')) {
-                return { status: 'BOOKED', label: 'Booked', activeBooking: booking };
-            }
-        }
-        
-        return { status: 'AVAILABLE', label: 'Available', activeBooking: null };
-    }
-
-    function getStatusBadgeHTML(status, label, activeBooking) {
-        let statusClass = '';
-        let dotClass = '';
-        let additionalInfo = '';
-        
-        switch(status) {
-            case 'AVAILABLE':
-                statusClass = 'status-available';
-                dotClass = 'dot-available';
-                break;
-            case 'BOOKED':
-                statusClass = 'status-booked';
-                dotClass = 'dot-booked';
-                if (activeBooking && activeBooking.startTime) {
-                    const startTime = new Date(activeBooking.startTime);
-                    additionalInfo = ` at ${startTime.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: false})}`;
-                }
-                break;
-            case 'IN_USE':
-                statusClass = 'status-in-use';
-                dotClass = 'dot-in-use';
-                if (activeBooking && activeBooking.endTime) {
-                    const endTime = new Date(activeBooking.endTime);
-                    additionalInfo = ` until ${endTime.toLocaleTimeString('en-US', {hour: '2-digit', minute: '2-digit', hour12: false})}`;
-                }
-                break;
-            case 'FINISHED':
-                statusClass = 'status-finished';
-                dotClass = 'dot-finished';
-                break;
-            case 'OVERDUE':
-                statusClass = 'status-overdue';
-                dotClass = 'dot-overdue';
-                break;
-        }
-        
-        return `
-            <span class="status-badge ${statusClass}">
-                <span class="status-dot ${dotClass}"></span>
-                ${label}${additionalInfo}
-            </span>
-        `;
-    }
-
     // --- RENDER MACHINES AND SLOTS ---
     function renderMachineSlots() {
         const $list = $("#machine-list").empty().html('<p>Loading available machines and schedule...</p>');
@@ -411,18 +281,10 @@
         ]).then(([machines, bookings]) => {
             
             const bookingLookup = new Set();
-            const machineBookings = {};
-            
             bookings.forEach(booking => {
                 if (booking.machine) {
                     const key = `${booking.machine.id}-${booking.bookingDate}`;
                     bookingLookup.add(key);
-                    
-                    // Group bookings by machine for status calculation
-                    if (!machineBookings[booking.machine.id]) {
-                        machineBookings[booking.machine.id] = [];
-                    }
-                    machineBookings[booking.machine.id].push(booking);
                 }
             });
 
@@ -433,13 +295,9 @@
 
             $list.empty();
             machines.forEach((machine) => {
-                // Calculate machine status
-                const bookingsForThisMachine = machineBookings[machine.id] || [];
-                const { status, label, activeBooking } = getMachineStatus(machine, bookingsForThisMachine);
-                const statusBadgeHTML = getStatusBadgeHTML(status, label, activeBooking);
-                
                 let slotButtonsHTML = "";
                 timeSlots.forEach((slotTime) => {
+                    
                     const isoSlotTime = `${todayStr}T${slotTime}:00`;
                     const lookupKey = `${machine.id}-${isoSlotTime}`;
                     const isTaken = bookingLookup.has(lookupKey);
@@ -451,38 +309,31 @@
                             </button>
                         `;
                     } else {
-                        // Disable booking if machine is not available
-                        const isDisabled = status !== 'AVAILABLE';
-                        const disabledClass = isDisabled ? 'slot-button-taken' : 'slot-button';
-                        const disabledAttr = isDisabled ? 'disabled' : '';
-                        
                         slotButtonsHTML += `
-                            <button class="${disabledClass}" 
+                            <button class="slot-button" 
                                 data-machine-id="${machine.id}"
                                 data-machine-name="${machine.name}" 
-                                data-slot-time="${slotTime}"
-                                ${disabledAttr}>
+                                data-slot-time="${slotTime}">
                                 ${slotTime}
                             </button>
                         `;
                     }
                 });
 
+                // --- ตรงนี้คือส่วนที่เพิ่ม Rating ---
                 const machineCardHTML = `
                     <div class="card">
                         <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <h3 class="text-xl font-bold mb-2">
-                                    <a href="/machine/${machine.id}" class="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1" title="View Details">
-                                        ${machine.name}
-                                        <span class="text-gray-500 font-normal text-base ml-1">(${machine.machineNumber})</span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-gray-400 ml-1">
-                                          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                                        </svg>
-                                    </a>
-                                </h3>
-                                ${statusBadgeHTML}
-                            </div>
+                            <h3 class="text-xl font-bold">
+                                <a href="/machine/${machine.id}" class="text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1" title="View Details">
+                                    ${machine.name}
+                                    <span class="text-gray-500 font-normal text-base ml-1">(${machine.machineNumber})</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="w-4 h-4 text-gray-400 ml-1">
+                                      <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                    </svg>
+                                </a>
+                            </h3>
+                            
                         </div>
 
                         <div class="grid grid-cols-4 gap-2">
@@ -574,20 +425,13 @@
         });
     });
 
-    // --- INITIALIZATION & AUTO-REFRESH ---
+    // --- INITIALIZATION ---
     $(document).ready(function () {
         if (!currentUserId && currentUserName === "User") {
             currentUserName = "Guest";
             console.warn("Could not identify user. Proceeding as Guest.");
         }
         renderMachineSlots();
-        
-        // Auto-refresh every 30 seconds to update machine statuses
-        setInterval(function() {
-            if ($("#booking-view").is(":visible")) {
-                renderMachineSlots();
-            }
-        }, 30000);
     });
 </script>
 
