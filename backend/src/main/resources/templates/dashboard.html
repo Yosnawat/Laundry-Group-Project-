@@ -167,9 +167,7 @@
                    class="tab-btn">Booking</a>
 
                 <button th:if="${currentUser.role.toString() == 'MANAGER'}" data-target="admin-view" id="nav-admin-link" class="tab-btn">Admin Panel</button>
-                
-                
-            </div>
+                </div>
 
             <span id="user-info" class="text-sm text-gray-600 font-medium sm:inline"
                   th:text="${currentUser.name} + ' (' + ${currentUser.role} + ')'">
